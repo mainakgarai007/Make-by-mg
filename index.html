@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Birthday Portal</title>
+    <style>
+        body { background: #0d0d0d; color: #ffffff; font-family: sans-serif; text-align: center; padding: 15px; }
+        .card { background: #1a1a1a; padding: 20px; border-radius: 10px; border: 1px solid #333; margin: 15px auto; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 5px; border: 1px solid #444; background: #262626; color: #fff; box-sizing: border-box; }
+        button { background: #1a73e8; color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .success-text { color: #4caf50; }
+        .wish-text { color: #ff9800; font-style: italic; }
+        #birthdayPage { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="loginSection" class="card">
+        <h2>Access Portal</h2>
+        <input type="text" id="userCode" placeholder="Enter Secret Code">
+        <button onclick="checkCode()">Unlock</button>
+    </div>
+
+    <div id="birthdayPage" class="card">
+        <h1 class="success-text">Happy Birthday</h1>
+        <h2 id="dispName"></h2>
+        <p id="dispDetails"></p>
+        <div style="border-top:1px solid #333; padding-top:15px;">
+            <h3 id="dispWish" class="wish-text"></h3>
+            <p id="dispMsg" style="line-height:1.6;"></p>
+        </div>
+        <button onclick="location.reload()" style="background:#333; margin-top:20px;">Exit</button>
+    </div>
+
+    <script>
+        // Data for your friends (Modify this as you like)
+        const users = {
+            "1111": { name: "Rahul", age: "24", dob: "12-05-2000", wish: "Have a blast!", msg: "You are a great friend. Stay happy always." },
+            "2222": { name: "Priya", age: "22", dob: "15-08-2002", wish: "Success always!", msg: "May all your dreams come true this year." }
+        };
+
+        function checkCode() {
+            const code = document.getElementById("userCode").value;
+            if (users[code]) {
+                document.getElementById("loginSection").style.display = "none";
+                document.getElementById("birthdayPage").style.display = "block";
+                
+                document.getElementById("dispName").innerText = users[code].name;
+                document.getElementById("dispDetails").innerText = "Age: " + users[code].age + " | DOB: " + users[code].dob;
+                document.getElementById("dispWish").innerText = users[code].wish;
+                document.getElementById("dispMsg").innerText = users[code].msg;
+            } else {
+                alert("Invalid Code");
+            }
+        }
+    </script>
+</body>
+</html>
