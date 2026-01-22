@@ -4,19 +4,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Birthday Portal</title>
     <style>
-        body { background: #0d0d0d; color: #ffffff; font-family: sans-serif; text-align: center; padding: 15px; }
-        .card { background: #1a1a1a; padding: 20px; border-radius: 10px; border: 1px solid #333; margin: 15px auto; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        body { background: #0d0d0d; color: #ffffff; font-family: sans-serif; text-align: center; padding: 15px; overflow-x: hidden; }
+        .card { background: #1a1a1a; padding: 20px; border-radius: 10px; border: 1px solid #333; margin: 15px auto; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); position: relative; z-index: 10; }
         input, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 5px; border: 1px solid #444; background: #262626; color: #fff; box-sizing: border-box; }
         button { background: #1a73e8; color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .success-text { color: #4caf50; }
-        .wish-text { color: #ff9800; font-style: italic; }
-        .admin-box { background: #211212; border: 1px solid #4d0000; padding: 15px; margin-bottom: 20px; text-align: left; border-radius: 8px; }
-        label { font-size: 11px; color: #888; text-transform: uppercase; }
+        .user-img { width: 100%; max-width: 200px; border-radius: 10px; margin-bottom: 15px; display: none; }
         #birthdayPage, #adminPage { display: none; }
+        .balloon { position: fixed; bottom: -100px; width: 30px; height: 40px; border-radius: 50%; z-index: 1; animation: float 8s linear infinite; }
+        @keyframes float { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-120vh); opacity: 0; } }
     </style>
 </head>
 <body>
-
     <div id="loginSection" class="card">
         <h2>Access Portal</h2>
         <input type="text" id="userCode" placeholder="Enter Code">
@@ -25,12 +24,9 @@
 
     <div id="birthdayPage" class="card">
         <h1 class="success-text">Happy Birthday</h1>
+        <img id="dispImg" class="user-img" src="">
         <h2 id="dispName"></h2>
-        <p id="dispDetails"></p>
-        <div style="border-top:1px solid #333; padding-top:15px;">
-            <h3 id="dispWish" class="wish-text"></h3>
-            <p id="dispMsg" style="line-height:1.6;"></p>
-        </div>
+        <p id="dispMsg"></p>
         <button onclick="location.reload()" style="background:#333;">Exit</button>
     </div>
 
@@ -43,70 +39,49 @@
 
     <script>
         const adminSecret = "867055";
-        
-        // Initial data - edit these lines for your friend!
+        const thingSpeakKey = "QRBMLUH6LKE3ZZSJ"; // PUT YOUR WRITE KEY HERE
+
         let users = JSON.parse(localStorage.getItem('bdayData')) || {
-            "1": { name: "Rahul", age: "24", dob: "12-05-2000", wish: "Have a blast!", msg: "You are a great friend.", code: "1111" },
-            "2": { name: "Priya", age: "22", dob: "15-08-2002", wish: "Success always!", msg: "May all your dreams come true.", code: "2222" }
+            "1": { name: "Friend 1", age: "20", dob: "01-01", wish: "HBD!", msg: "Msg", code: "1001", img: "" },
+            "2": { name: "Friend 2", age: "20", dob: "01-01", wish: "HBD!", msg: "Msg", code: "1002", img: "" }
         };
+
+        function updateESP(val) {
+            fetch(`https://api.thingspeak.com/update?api_key=${thingSpeakKey}&field1=${val}`);
+        }
 
         function checkCode() {
             const entered = document.getElementById("userCode").value;
             if (entered === adminSecret) {
+                updateESP(1); // 1 = Admin
                 showAdmin();
                 return;
             }
             let found = false;
             for (let id in users) {
-                if (users[id].code === entered) {
+                if (users[id].code === entered && entered !== "") {
+                    updateESP(2); // 2 = User
                     showUser(users[id]);
-                    found = true;
-                    break;
+                    found = true; break;
                 }
             }
-            if (!found) alert("Invalid Code");
+            if (!found) {
+                updateESP(3); // 3 = Fail
+                alert("Invalid Code");
+            }
         }
 
         function showUser(user) {
             document.getElementById("loginSection").style.display = "none";
             document.getElementById("birthdayPage").style.display = "block";
             document.getElementById("dispName").innerText = user.name;
-            document.getElementById("dispDetails").innerText = "Age: " + user.age + " | DOB: " + user.dob;
-            document.getElementById("dispWish").innerText = user.wish;
             document.getElementById("dispMsg").innerText = user.msg;
+            if(user.img) { document.getElementById("dispImg").src = user.img; document.getElementById("dispImg").style.display = "block"; }
         }
 
         function showAdmin() {
             document.getElementById("loginSection").style.display = "none";
             document.getElementById("adminPage").style.display = "block";
-            let container = document.getElementById("adminInputs");
-            container.innerHTML = "";
-            for (let id in users) {
-                container.innerHTML += `
-                    <div class="card admin-box">
-                        <label>Name</label><input type="text" id="n${id}" value="${users[id].name}">
-                        <label>Code</label><input type="text" id="c${id}" value="${users[id].code}">
-                        <label>Age</label><input type="text" id="a${id}" value="${users[id].age}">
-                        <label>DOB</label><input type="text" id="d${id}" value="${users[id].dob}">
-                        <label>Wish</label><input type="text" id="w${id}" value="${users[id].wish}">
-                        <label>Message</label><textarea id="m${id}">${users[id].msg}</textarea>
-                    </div>`;
-            }
-        }
-
-        function saveAdminData() {
-            for (let id in users) {
-                users[id] = {
-                    name: document.getElementById("n"+id).value,
-                    code: document.getElementById("c"+id).value,
-                    age: document.getElementById("a"+id).value,
-                    dob: document.getElementById("d"+id).value,
-                    wish: document.getElementById("w"+id).value,
-                    msg: document.getElementById("m"+id).value
-                };
-            }
-            localStorage.setItem('bdayData', JSON.stringify(users));
-            alert("Saved to your phone!");
         }
     </script>
 </body>
