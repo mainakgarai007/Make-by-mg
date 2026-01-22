@@ -6,18 +6,20 @@
     <style>
         body { background: #0d0d0d; color: #ffffff; font-family: sans-serif; text-align: center; padding: 15px; }
         .card { background: #1a1a1a; padding: 20px; border-radius: 10px; border: 1px solid #333; margin: 15px auto; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 5px; border: 1px solid #444; background: #262626; color: #fff; box-sizing: border-box; }
-        button { background: #1a73e8; color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 5px; border: 1px solid #444; background: #262626; color: #fff; box-sizing: border-box; }
+        button { background: #1a73e8; color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .success-text { color: #4caf50; }
         .wish-text { color: #ff9800; font-style: italic; }
-        #birthdayPage { display: none; }
+        .admin-box { background: #211212; border: 1px solid #4d0000; padding: 15px; margin-bottom: 20px; text-align: left; border-radius: 8px; }
+        label { font-size: 11px; color: #888; text-transform: uppercase; }
+        #birthdayPage, #adminPage { display: none; }
     </style>
 </head>
 <body>
 
     <div id="loginSection" class="card">
         <h2>Access Portal</h2>
-        <input type="text" id="userCode" placeholder="Enter Secret Code">
+        <input type="text" id="userCode" placeholder="Enter Code">
         <button onclick="checkCode()">Unlock</button>
     </div>
 
@@ -29,29 +31,82 @@
             <h3 id="dispWish" class="wish-text"></h3>
             <p id="dispMsg" style="line-height:1.6;"></p>
         </div>
-        <button onclick="location.reload()" style="background:#333; margin-top:20px;">Exit</button>
+        <button onclick="location.reload()" style="background:#333;">Exit</button>
+    </div>
+
+    <div id="adminPage">
+        <h2>Admin Dashboard</h2>
+        <div id="adminInputs"></div>
+        <button onclick="saveAdminData()" style="background:#d32f2f;">Save All Changes</button>
+        <button onclick="location.reload()" style="background:#333;">Back</button>
     </div>
 
     <script>
-        // Data for your friends (Modify this as you like)
-        const users = {
-            "1111": { name: "Rahul", age: "24", dob: "12-05-2000", wish: "Have a blast!", msg: "You are a great friend. Stay happy always." },
-            "2222": { name: "Priya", age: "22", dob: "15-08-2002", wish: "Success always!", msg: "May all your dreams come true this year." }
+        const adminSecret = "867055";
+        
+        // Initial data - edit these lines for your friend!
+        let users = JSON.parse(localStorage.getItem('bdayData')) || {
+            "1": { name: "Rahul", age: "24", dob: "12-05-2000", wish: "Have a blast!", msg: "You are a great friend.", code: "1111" },
+            "2": { name: "Priya", age: "22", dob: "15-08-2002", wish: "Success always!", msg: "May all your dreams come true.", code: "2222" }
         };
 
         function checkCode() {
-            const code = document.getElementById("userCode").value;
-            if (users[code]) {
-                document.getElementById("loginSection").style.display = "none";
-                document.getElementById("birthdayPage").style.display = "block";
-                
-                document.getElementById("dispName").innerText = users[code].name;
-                document.getElementById("dispDetails").innerText = "Age: " + users[code].age + " | DOB: " + users[code].dob;
-                document.getElementById("dispWish").innerText = users[code].wish;
-                document.getElementById("dispMsg").innerText = users[code].msg;
-            } else {
-                alert("Invalid Code");
+            const entered = document.getElementById("userCode").value;
+            if (entered === adminSecret) {
+                showAdmin();
+                return;
             }
+            let found = false;
+            for (let id in users) {
+                if (users[id].code === entered) {
+                    showUser(users[id]);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) alert("Invalid Code");
+        }
+
+        function showUser(user) {
+            document.getElementById("loginSection").style.display = "none";
+            document.getElementById("birthdayPage").style.display = "block";
+            document.getElementById("dispName").innerText = user.name;
+            document.getElementById("dispDetails").innerText = "Age: " + user.age + " | DOB: " + user.dob;
+            document.getElementById("dispWish").innerText = user.wish;
+            document.getElementById("dispMsg").innerText = user.msg;
+        }
+
+        function showAdmin() {
+            document.getElementById("loginSection").style.display = "none";
+            document.getElementById("adminPage").style.display = "block";
+            let container = document.getElementById("adminInputs");
+            container.innerHTML = "";
+            for (let id in users) {
+                container.innerHTML += `
+                    <div class="card admin-box">
+                        <label>Name</label><input type="text" id="n${id}" value="${users[id].name}">
+                        <label>Code</label><input type="text" id="c${id}" value="${users[id].code}">
+                        <label>Age</label><input type="text" id="a${id}" value="${users[id].age}">
+                        <label>DOB</label><input type="text" id="d${id}" value="${users[id].dob}">
+                        <label>Wish</label><input type="text" id="w${id}" value="${users[id].wish}">
+                        <label>Message</label><textarea id="m${id}">${users[id].msg}</textarea>
+                    </div>`;
+            }
+        }
+
+        function saveAdminData() {
+            for (let id in users) {
+                users[id] = {
+                    name: document.getElementById("n"+id).value,
+                    code: document.getElementById("c"+id).value,
+                    age: document.getElementById("a"+id).value,
+                    dob: document.getElementById("d"+id).value,
+                    wish: document.getElementById("w"+id).value,
+                    msg: document.getElementById("m"+id).value
+                };
+            }
+            localStorage.setItem('bdayData', JSON.stringify(users));
+            alert("Saved to your phone!");
         }
     </script>
 </body>
