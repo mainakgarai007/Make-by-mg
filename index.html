@@ -7,8 +7,10 @@
         body { background: #0d0d0d; color: #ffffff; font-family: sans-serif; text-align: center; padding: 15px; }
         .card { background: #1a1a1a; padding: 20px; border-radius: 10px; border: 1px solid #333; margin: 15px auto; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         input, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 5px; border: 1px solid #444; background: #262626; color: #fff; box-sizing: border-box; }
-        button { background: #1a73e8; color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .success-text { color: #4caf50; }
+        button { background: #1a73e8; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .chat-box { display: none; margin-top: 15px; border-top: 1px solid #333; padding-top: 15px; }
+        #chatDisplay { height: 150px; overflow-y: scroll; background: #000; padding: 10px; border-radius: 5px; text-align: left; font-size: 13px; margin-bottom: 10px; border: 1px solid #444; }
+        .msg-line { color: #4caf50; margin-bottom: 5px; }
         #birthdayPage, #adminPage { display: none; }
     </style>
 </head>
@@ -21,48 +23,40 @@
     </div>
 
     <div id="birthdayPage" class="card">
-        <h1 class="success-text">Happy Birthday</h1>
+        <h1 style="color:#4caf50;">Happy Birthday!</h1>
         <h2 id="dispName"></h2>
-        <p id="dispMsg" style="line-height:1.6;"></p>
-        <button onclick="location.reload()" style="background:#333;">Exit</button>
+        <p id="dispMsg"></p>
+        
+        <button onclick="toggleChat()" style="background:#ff9800;">Open Group Chat</button>
+        
+        <div id="chatSection" class="chat-box">
+            <div id="chatDisplay">Loading messages...</div>
+            <input type="text" id="chatInput" placeholder="Type a message...">
+            <button onclick="sendChatMessage()" style="background:#28a745;">Send Message</button>
+        </div>
+        
+        <button onclick="location.reload()" style="background:#333; margin-top:20px;">Exit</button>
     </div>
 
-    <div id="adminPage">
-        <h2>Admin Dashboard</h2>
-        <div id="adminInputs"></div>
-        <button onclick="saveAdminData()" style="background:#d32f2f;">Save All Changes</button>
-        <button onclick="location.reload()" style="background:#333;">Back</button>
-    </div>
+    <div id="adminPage"> ... </div>
 
     <script>
-        const adminSecret = "867055";
-        const thingSpeakKey = "ZOMVHDCOLTH4GKMG"; // Ekhane Write API Key din
+        const thingSpeakKey = "ZOMVHDCOLTH4GKMG"; 
+        const channelID = "3235968";
+        let currentUserName = "";
 
-        let users = JSON.parse(localStorage.getItem('bdayData')) || {
-            "1": { name: "Rahul", code: "1111", msg: "Happy Birthday!" },
-            "2": { name: "Priya", code: "2222", msg: "Have a great day!" }
-        };
-
-        function updateESP(val) {
-            fetch(`https://api.thingspeak.com/update?api_key=${thingSpeakKey}&field1=${val}`);
-        }
+        // Previous user logic and updateESP code here...
 
         function checkCode() {
             const entered = document.getElementById("userCode").value;
-            if (entered === adminSecret) {
-                updateESP(1); // Admin
-                showAdmin();
-                return;
+            // Admin logic...
+            let user = users.find(u => u.code === entered);
+            if (user) {
+                currentUserName = user.name;
+                updateESP(2); // Signal User Login
+                showUser(user);
             }
-            let found = false;
-            for (let id in users) {
-                if (users[id].code === entered) {
-                    updateESP(2); // User
-                    showUser(users[id]);
-                    found = true; break;
-                }
-            }
-            if (!found) { updateESP(3); alert("Invalid Code"); }
+            // ...
         }
 
         function showUser(user) {
@@ -72,31 +66,36 @@
             document.getElementById("dispMsg").innerText = user.msg;
         }
 
-        function showAdmin() {
-            document.getElementById("loginSection").style.display = "none";
-            document.getElementById("adminPage").style.display = "block";
-            let container = document.getElementById("adminInputs");
-            container.innerHTML = "";
-            for (let id in users) {
-                container.innerHTML += `
-                    <div class="card" style="background:#222; text-align:left;">
-                        <label>Name</label><input type="text" id="n${id}" value="${users[id].name}">
-                        <label>Code</label><input type="text" id="c${id}" value="${users[id].code}">
-                        <label>Msg</label><textarea id="m${id}">${users[id].msg}</textarea>
-                    </div>`;
+        function toggleChat() {
+            const chat = document.getElementById("chatSection");
+            chat.style.display = chat.style.display === "none" ? "block" : "none";
+            if(chat.style.display === "block") {
+                loadChat();
+                setInterval(loadChat, 5000); // 5s por por update hobe
             }
         }
 
-        function saveAdminData() {
-            for (let id in users) {
-                users[id] = {
-                    name: document.getElementById("n"+id).value,
-                    code: document.getElementById("c"+id).value,
-                    msg: document.getElementById("m"+id).value
-                };
-            }
-            localStorage.setItem('bdayData', JSON.stringify(users));
-            alert("Saved!");
+        function sendChatMessage() {
+            const msg = document.getElementById("chatInput").value;
+            if(!msg) return;
+            const fullMsg = encodeURIComponent(currentUserName + ": " + msg);
+            fetch(`https://api.thingspeak.com/update?api_key=${thingSpeakKey}&field3=${fullMsg}`);
+            document.getElementById("chatInput").value = "";
+            setTimeout(loadChat, 2000);
+        }
+
+        function loadChat() {
+            fetch(`https://api.thingspeak.com/channels/${channelID}/fields/3.json?results=5`)
+            .then(r => r.json()).then(data => {
+                const disp = document.getElementById("chatDisplay");
+                disp.innerHTML = "";
+                data.feeds.forEach(f => {
+                    if(f.field3) {
+                        disp.innerHTML += `<div class="msg-line">${f.field3}</div>`;
+                    }
+                });
+                disp.scrollTop = disp.scrollHeight;
+            });
         }
     </script>
 </body>
