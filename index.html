@@ -4,11 +4,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Birthday Surprise Portal</title>
     <style>
-        body { background: #0d0d0d; color: #fff; font-family: sans-serif; text-align: center; overflow-x: hidden; margin: 0; }
+        body { background: #0d0d0d; color: #fff; font-family: sans-serif; text-align: center; overflow-x: hidden; margin: 0; padding-bottom: 50px; }
         .card { background: #1a1a1a; padding: 20px; border-radius: 15px; border: 1px solid #333; margin: 15px auto; max-width: 400px; position: relative; z-index: 10; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         input, textarea { width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px; border: 1px solid #444; background: #262626; color: #fff; box-sizing: border-box; }
-        button { background: #1a73e8; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
-        button:hover { opacity: 0.8; }
+        button { background: #1a73e8; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         
         /* Balloon Animation */
         .balloon { position: fixed; top: -100px; font-size: 30px; z-index: 1; animation: fall 5s linear forwards; }
@@ -20,42 +19,38 @@
         #secretMsg { display: none; background: #222; padding: 15px; border-radius: 10px; margin-top: 15px; border: 1px dashed #ff9800; }
         
         #birthdayPage, #adminPage { display: none; padding: 20px; }
-        .admin-item { background: #222; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left; border: 1px solid #444; }
-        .feedback-item { padding: 10px; border-bottom: 1px solid #333; color: #4caf50; font-size: 14px; }
+        .admin-item { background: #222; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left; border: 2px solid #444; }
+        .feedback-item { padding: 10px; border-bottom: 1px solid #333; color: #4caf50; font-size: 14px; text-align: left; }
     </style>
 </head>
 <body>
 
     <div id="loginSection" class="card" style="margin-top: 80px;">
         <h2 style="color: #1a73e8;">Surprise Portal</h2>
-        <p style="color: #888;">Enter your special code to unlock</p>
-        <input type="text" id="userCode" placeholder="Enter Code Here">
+        <input type="text" id="userCode" placeholder="Enter Code">
         <button onclick="checkCode()">Unlock Now 🔓</button>
     </div>
 
     <div id="birthdayPage">
-        <h1 style="color:#ff9800; font-size: 45px; margin-bottom: 5px;" id="dispWish"></h1>
-        <h2 style="font-size: 32px; margin-top: 0;">Name: <span id="dispName" style="color:#4caf50;"></span></h2>
-        <h3 style="background: #222; display: inline-block; padding: 5px 15px; border-radius: 20px;">
-            Age: <span id="dispAge"></span> | DOB: <span id="dispDOB"></span>
-        </h3>
-        <p id="dispMsg" style="font-size: 19px; line-height: 1.6; margin: 20px auto; max-width: 500px; color: #ccc;"></p>
+        <h1 style="color:#ff9800; font-size: 40px;" id="dispWish"></h1>
+        <h2 style="font-size: 30px;">Name: <span id="dispName" style="color:#4caf50;"></span></h2>
+        <h3>Age: <span id="dispAge"></span> | DOB: <span id="dispDOB"></span></h3>
+        <p id="dispMsg" style="font-size: 18px; line-height: 1.6; margin: 20px;"></p>
 
         <div id="giftSection" onclick="openGift()">
             <div style="font-size: 70px;">🎁</div>
-            <p style="color: #ff9800;"><strong>Click the gift to open!</strong></p>
+            <p><strong>Click to open gift!</strong></p>
         </div>
         <div id="secretMsg">
-            <strong style="color: #ff9800; text-transform: uppercase;">✨ Secret Message ✨</strong> 
-            <p id="dispSecret" style="font-style: italic; font-size: 18px; margin-top: 10px;"></p>
+            <strong style="color: #ff9800;">✨ Secret Message ✨</strong> 
+            <p id="dispSecret" style="font-style: italic; font-size: 18px;"></p>
         </div>
 
         <div class="card" style="margin-top: 40px; border-color: #e91e63;">
             <h3 style="color: #e91e63;">Leave a Feedback</h3>
-            <textarea id="feedbackInput" placeholder="Write your feelings..."></textarea>
+            <textarea id="feedbackInput" placeholder="Write feedback..."></textarea>
             <button onclick="sendFeedback()" style="background: #e91e63;">Submit Feedback</button>
         </div>
-        
         <button onclick="location.reload()" style="background:#444; margin-top:20px; width: 100px;">Exit</button>
     </div>
 
@@ -65,21 +60,20 @@
         <div class="card" style="background: #000; border: 2px solid #e91e63; margin-bottom: 30px;">
             <h3 style="color: #e91e63;">Feedback Inbox</h3>
             <button onclick="loadFeedbacks()" style="background: #333; font-size: 12px; margin-bottom: 10px;">Refresh Feedbacks</button>
-            <div id="feedbackList" style="text-align: left; max-height: 250px; overflow-y: auto;">
-                Click refresh to see feedbacks.
-            </div>
+            <div id="feedbackList">Click Refresh to see messages.</div>
         </div>
 
-        <div id="adminInputs"></div>
-        <button onclick="addUser()" style="background:#28a745; margin-bottom: 10px;">+ Add New Friend</button>
+        <div id="adminInputs" style="margin-bottom: 20px;"></div>
+        
+        <button onclick="addNewUser()" style="background:#28a745; margin-bottom: 10px; font-size: 18px;">+ Add New Friend</button>
         <button onclick="saveAdminData()" style="background:#d32f2f;">Save All Changes</button>
         <button onclick="location.reload()" style="background:#333; margin-top:10px;">Back</button>
     </div>
 
     <script>
-        const adminSecret = "867055"; // Admin login code
-        const thingSpeakKey = "ZOMVHDCOLTH4GKMG"; // PUT YOUR WRITE API KEY HERE
-        const channelID = "3235968";   // PUT YOUR CHANNEL ID HERE
+        const adminSecret = "867055";
+        const thingSpeakKey = "ZOMVHDCOLTH4GKMG"; // OBOSHOY DIN
+        const channelID = "3235968";   // OBOSHOY DIN
 
         let users = JSON.parse(localStorage.getItem('bdayData')) || [];
 
@@ -94,20 +88,117 @@
                 startBalloons();
                 showUser(user);
             } else {
-                alert("Incorrect Code! Try again.");
+                alert("Incorrect Code!");
             }
         }
 
         function startBalloons() {
-            for(let i=0; i<35; i++) {
+            for(let i=0; i<30; i++) {
                 let b = document.createElement("div");
                 b.className = "balloon";
-                b.innerText = ["🎈","✨","🎂","🥳","🎁","💖"][Math.floor(Math.random()*6)];
+                b.innerText = ["🎈","✨","🎂","🥳","🎁"][Math.floor(Math.random()*5)];
                 b.style.left = Math.random() * 100 + "vw";
-                b.style.animationDelay = Math.random() * 3 + "s";
+                b.style.animationDelay = Math.random() * 2 + "s";
                 document.body.appendChild(b);
             }
         }
+
+        function showUser(user) {
+            document.getElementById("loginSection").style.display = "none";
+            document.getElementById("birthdayPage").style.display = "block";
+            document.getElementById("dispName").innerText = user.name;
+            document.getElementById("dispWish").innerText = user.wish;
+            document.getElementById("dispAge").innerText = user.age;
+            document.getElementById("dispDOB").innerText = user.dob;
+            document.getElementById("dispMsg").innerText = user.msg;
+            document.getElementById("dispSecret").innerText = user.secret;
+            document.getElementById("giftSection").style.display = "block";
+        }
+
+        function openGift() {
+            document.getElementById("secretMsg").style.display = "block";
+            alert("Secret Message Unlocked!");
+        }
+
+        function sendFeedback() {
+            const fb = document.getElementById("feedbackInput").value;
+            const code = document.getElementById("userCode").value;
+            if(!fb) return;
+            const fullFeedback = encodeURIComponent("Code[" + code + "]: " + fb);
+            fetch(`https://api.thingspeak.com/update?api_key=${thingSpeakKey}&field3=${fullFeedback}`)
+            .then(() => { alert("Feedback Sent!"); document.getElementById("feedbackInput").value = ""; });
+        }
+
+        function loadFeedbacks() {
+            const list = document.getElementById("feedbackList");
+            list.innerHTML = "Fetching...";
+            fetch(`https://api.thingspeak.com/channels/${channelID}/fields/3.json?results=10`)
+            .then(r => r.json()).then(data => {
+                list.innerHTML = "";
+                if(!data.feeds || data.feeds.length === 0) { list.innerHTML = "No feedback yet."; return; }
+                data.feeds.reverse().forEach(f => {
+                    if(f.field3) { list.innerHTML += `<div class="feedback-item">${f.field3}</div>`; }
+                });
+            });
+        }
+
+        function showAdmin() {
+            document.getElementById("loginSection").style.display = "none";
+            document.getElementById("adminPage").style.display = "block";
+            renderAdminUsers();
+            loadFeedbacks();
+        }
+
+        function renderAdminUsers() {
+            const container = document.getElementById("adminInputs");
+            container.innerHTML = "";
+            users.forEach((user, index) => {
+                const div = document.createElement("div");
+                div.className = "admin-item";
+                div.innerHTML = `
+                    <strong>Friend Profile #${index + 1}</strong>
+                    <input type="text" placeholder="Name" id="n${index}" value="${user.name}">
+                    <input type="text" placeholder="DOB" id="d${index}" value="${user.dob}">
+                    <input type="text" placeholder="Age" id="a${index}" value="${user.age}">
+                    <input type="text" placeholder="Code" id="c${index}" value="${user.code}">
+                    <input type="text" placeholder="Wish" id="w${index}" value="${user.wish}">
+                    <textarea placeholder="Message" id="m${index}">${user.msg}</textarea>
+                    <textarea placeholder="Secret Message" id="s${index}">${user.secret}</textarea>
+                    <button onclick="removeUser(${index})" style="background:#444; font-size:10px;">Remove User</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addNewUser() {
+            users.push({ name:"", dob:"", age:"", code:"", wish:"", msg:"", secret:"" });
+            renderAdminUsers();
+            window.scrollTo(0, document.body.scrollHeight); // Add korle page niche nambe
+        }
+
+        function removeUser(i) {
+            if(confirm("Delete this profile?")) {
+                users.splice(i, 1);
+                renderAdminUsers();
+            }
+        }
+
+        function saveAdminData() {
+            users = users.map((u, i) => ({
+                name: document.getElementById(`n${i}`).value,
+                dob: document.getElementById(`d${i}`).value,
+                age: document.getElementById(`a${i}`).value,
+                code: document.getElementById(`c${i}`).value,
+                wish: document.getElementById(`w${i}`).value,
+                msg: document.getElementById(`m${i}`).value,
+                secret: document.getElementById(`s${i}`).value
+            }));
+            localStorage.setItem('bdayData', JSON.stringify(users));
+            alert("Database Saved Successfully!");
+        }
+    </script>
+</body>
+</html>
 
         function showUser(user) {
             document.getElementById("loginSection").style.display = "none";
