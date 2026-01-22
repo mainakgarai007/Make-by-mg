@@ -4,18 +4,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Birthday Portal</title>
     <style>
-        body { background: #0d0d0d; color: #ffffff; font-family: sans-serif; text-align: center; padding: 15px; overflow-x: hidden; }
-        .card { background: #1a1a1a; padding: 20px; border-radius: 10px; border: 1px solid #333; margin: 15px auto; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); position: relative; z-index: 10; }
+        body { background: #0d0d0d; color: #ffffff; font-family: sans-serif; text-align: center; padding: 15px; }
+        .card { background: #1a1a1a; padding: 20px; border-radius: 10px; border: 1px solid #333; margin: 15px auto; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         input, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 5px; border: 1px solid #444; background: #262626; color: #fff; box-sizing: border-box; }
         button { background: #1a73e8; color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .success-text { color: #4caf50; }
-        .user-img { width: 100%; max-width: 200px; border-radius: 10px; margin-bottom: 15px; display: none; }
         #birthdayPage, #adminPage { display: none; }
-        .balloon { position: fixed; bottom: -100px; width: 30px; height: 40px; border-radius: 50%; z-index: 1; animation: float 8s linear infinite; }
-        @keyframes float { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-120vh); opacity: 0; } }
     </style>
 </head>
 <body>
+
     <div id="loginSection" class="card">
         <h2>Access Portal</h2>
         <input type="text" id="userCode" placeholder="Enter Code">
@@ -24,9 +22,8 @@
 
     <div id="birthdayPage" class="card">
         <h1 class="success-text">Happy Birthday</h1>
-        <img id="dispImg" class="user-img" src="">
         <h2 id="dispName"></h2>
-        <p id="dispMsg"></p>
+        <p id="dispMsg" style="line-height:1.6;"></p>
         <button onclick="location.reload()" style="background:#333;">Exit</button>
     </div>
 
@@ -39,11 +36,11 @@
 
     <script>
         const adminSecret = "867055";
-        const thingSpeakKey = "QRBMLUH6LKE3ZZSJ"; // PUT YOUR WRITE KEY HERE
+        const thingSpeakKey = "KX5WM4B6SHERSC1M"; // Ekhane Write API Key din
 
         let users = JSON.parse(localStorage.getItem('bdayData')) || {
-            "1": { name: "Friend 1", age: "20", dob: "01-01", wish: "HBD!", msg: "Msg", code: "1001", img: "" },
-            "2": { name: "Friend 2", age: "20", dob: "01-01", wish: "HBD!", msg: "Msg", code: "1002", img: "" }
+            "1": { name: "Rahul", code: "1111", msg: "Happy Birthday!" },
+            "2": { name: "Priya", code: "2222", msg: "Have a great day!" }
         };
 
         function updateESP(val) {
@@ -53,22 +50,19 @@
         function checkCode() {
             const entered = document.getElementById("userCode").value;
             if (entered === adminSecret) {
-                updateESP(1); // 1 = Admin
+                updateESP(1); // Admin
                 showAdmin();
                 return;
             }
             let found = false;
             for (let id in users) {
-                if (users[id].code === entered && entered !== "") {
-                    updateESP(2); // 2 = User
+                if (users[id].code === entered) {
+                    updateESP(2); // User
                     showUser(users[id]);
                     found = true; break;
                 }
             }
-            if (!found) {
-                updateESP(3); // 3 = Fail
-                alert("Invalid Code");
-            }
+            if (!found) { updateESP(3); alert("Invalid Code"); }
         }
 
         function showUser(user) {
@@ -76,12 +70,33 @@
             document.getElementById("birthdayPage").style.display = "block";
             document.getElementById("dispName").innerText = user.name;
             document.getElementById("dispMsg").innerText = user.msg;
-            if(user.img) { document.getElementById("dispImg").src = user.img; document.getElementById("dispImg").style.display = "block"; }
         }
 
         function showAdmin() {
             document.getElementById("loginSection").style.display = "none";
             document.getElementById("adminPage").style.display = "block";
+            let container = document.getElementById("adminInputs");
+            container.innerHTML = "";
+            for (let id in users) {
+                container.innerHTML += `
+                    <div class="card" style="background:#222; text-align:left;">
+                        <label>Name</label><input type="text" id="n${id}" value="${users[id].name}">
+                        <label>Code</label><input type="text" id="c${id}" value="${users[id].code}">
+                        <label>Msg</label><textarea id="m${id}">${users[id].msg}</textarea>
+                    </div>`;
+            }
+        }
+
+        function saveAdminData() {
+            for (let id in users) {
+                users[id] = {
+                    name: document.getElementById("n"+id).value,
+                    code: document.getElementById("c"+id).value,
+                    msg: document.getElementById("m"+id).value
+                };
+            }
+            localStorage.setItem('bdayData', JSON.stringify(users));
+            alert("Saved!");
         }
     </script>
 </body>
