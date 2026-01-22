@@ -8,9 +8,8 @@
         .card { background: #1a1a1a; padding: 20px; border-radius: 10px; border: 1px solid #333; margin: 15px auto; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         input, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 5px; border: 1px solid #444; background: #262626; color: #fff; box-sizing: border-box; }
         button { background: #1a73e8; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .chat-box { display: none; margin-top: 15px; border-top: 1px solid #333; padding-top: 15px; }
-        #chatDisplay { height: 150px; overflow-y: scroll; background: #000; padding: 10px; border-radius: 5px; text-align: left; font-size: 13px; margin-bottom: 10px; border: 1px solid #444; }
-        .msg-line { color: #4caf50; margin-bottom: 5px; }
+        .status-box { padding: 10px; margin-bottom: 15px; border-radius: 5px; background: #222; font-size: 14px; }
+        .admin-item { background: #222; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: left; border: 1px solid #444; }
         #birthdayPage, #adminPage { display: none; }
     </style>
 </head>
@@ -26,37 +25,60 @@
         <h1 style="color:#4caf50;">Happy Birthday!</h1>
         <h2 id="dispName"></h2>
         <p id="dispMsg"></p>
-        
-        <button onclick="toggleChat()" style="background:#ff9800;">Open Group Chat</button>
-        
-        <div id="chatSection" class="chat-box">
-            <div id="chatDisplay">Loading messages...</div>
-            <input type="text" id="chatInput" placeholder="Type a message...">
-            <button onclick="sendChatMessage()" style="background:#28a745;">Send Message</button>
-        </div>
-        
-        <button onclick="location.reload()" style="background:#333; margin-top:20px;">Exit</button>
+        <button onclick="location.reload()" style="background:#333;">Exit</button>
     </div>
 
-    <div id="adminPage"> ... </div>
+    <div id="adminPage" class="card" style="max-width: 500px;">
+        <h2>Admin Dashboard</h2>
+        <div class="status-box">
+            Hardware Status: <span id="statusText" style="color: gray;">Checking...</span>
+        </div>
+        <div id="adminInputs"></div>
+        <button onclick="addUser()" style="background:#28a745;">+ Add New User</button>
+        <button onclick="saveAdminData()" style="background:#d32f2f;">Save All Changes</button>
+        <button onclick="location.reload()" style="background:#333;">Back</button>
+    </div>
 
     <script>
+        const adminSecret = "867055";
         const thingSpeakKey = "ZOMVHDCOLTH4GKMG"; 
         const channelID = "3235968";
-        let currentUserName = "";
 
-        // Previous user logic and updateESP code here...
+        // Local storage theke user data load kora
+        let users = JSON.parse(localStorage.getItem('bdayData')) || [
+            { id: Date.now(), name: "Friend 1", code: "1001", msg: "Happy Birthday!" }
+        ];
+
+        function updateESP(val) {
+            fetch(`https://api.thingspeak.com/update?api_key=${thingSpeakKey}&field1=${val}`);
+        }
+
+        function checkESPStatus() {
+            fetch(`https://api.thingspeak.com/channels/${channelID}/fields/2/last.json`)
+            .then(r => r.json()).then(data => {
+                const st = document.getElementById("statusText");
+                if(data.field2 == "1") { st.innerText = "● Connected"; st.style.color = "#4caf50"; }
+                else { st.innerText = "○ Disconnected"; st.style.color = "#f44336"; }
+            }).catch(() => {});
+        }
 
         function checkCode() {
             const entered = document.getElementById("userCode").value;
-            // Admin logic...
+            // Admin Page Open Logic
+            if (entered === adminSecret) {
+                updateESP(1);
+                showAdmin();
+                setInterval(checkESPStatus, 5000);
+                return;
+            }
+            // User Page Open Logic
             let user = users.find(u => u.code === entered);
             if (user) {
-                currentUserName = user.name;
-                updateESP(2); // Signal User Login
+                updateESP(2);
                 showUser(user);
+            } else {
+                alert("Invalid Code");
             }
-            // ...
         }
 
         function showUser(user) {
@@ -66,36 +88,48 @@
             document.getElementById("dispMsg").innerText = user.msg;
         }
 
-        function toggleChat() {
-            const chat = document.getElementById("chatSection");
-            chat.style.display = chat.style.display === "none" ? "block" : "none";
-            if(chat.style.display === "block") {
-                loadChat();
-                setInterval(loadChat, 5000); // 5s por por update hobe
+        function showAdmin() {
+            document.getElementById("loginSection").style.display = "none";
+            document.getElementById("adminPage").style.display = "block";
+            renderAdminUsers();
+        }
+
+        function renderAdminUsers() {
+            let container = document.getElementById("adminInputs");
+            container.innerHTML = "";
+            users.forEach((user, index) => {
+                container.innerHTML += `
+                    <div class="admin-item">
+                        <strong>User ${index + 1}</strong>
+                        <input type="text" placeholder="Name" id="n${index}" value="${user.name}">
+                        <input type="text" placeholder="Code" id="c${index}" value="${user.code}">
+                        <textarea placeholder="Message" id="m${index}">${user.msg}</textarea>
+                        <button onclick="deleteUser(${index})" style="background:#555; padding:5px; font-size:12px;">Remove User</button>
+                    </div>`;
+            });
+        }
+
+        function addUser() {
+            users.push({ id: Date.now(), name: "", code: "", msg: "" });
+            renderAdminUsers();
+        }
+
+        function deleteUser(index) {
+            if(confirm("Delete this user?")) {
+                users.splice(index, 1);
+                renderAdminUsers();
             }
         }
 
-        function sendChatMessage() {
-            const msg = document.getElementById("chatInput").value;
-            if(!msg) return;
-            const fullMsg = encodeURIComponent(currentUserName + ": " + msg);
-            fetch(`https://api.thingspeak.com/update?api_key=${thingSpeakKey}&field3=${fullMsg}`);
-            document.getElementById("chatInput").value = "";
-            setTimeout(loadChat, 2000);
-        }
-
-        function loadChat() {
-            fetch(`https://api.thingspeak.com/channels/${channelID}/fields/3.json?results=5`)
-            .then(r => r.json()).then(data => {
-                const disp = document.getElementById("chatDisplay");
-                disp.innerHTML = "";
-                data.feeds.forEach(f => {
-                    if(f.field3) {
-                        disp.innerHTML += `<div class="msg-line">${f.field3}</div>`;
-                    }
-                });
-                disp.scrollTop = disp.scrollHeight;
-            });
+        function saveAdminData() {
+            users = users.map((user, index) => ({
+                id: user.id,
+                name: document.getElementById(`n${index}`).value,
+                code: document.getElementById(`c${index}`).value,
+                msg: document.getElementById(`m${index}`).value
+            }));
+            localStorage.setItem('bdayData', JSON.stringify(users));
+            alert("All Users Saved!");
         }
     </script>
 </body>
