@@ -1,265 +1,293 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Birthday Surprise</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Surprise</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-color: #ffffff;
+            --accent: #00d2ff;
+            --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        }
 
-<!-- Firebase v9 compat (SAFE for GitHub Pages) -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+        /* Themes */
+        .theme-space { --bg-gradient: linear-gradient(135deg, #000428, #004e92); --accent: #00d2ff; --text-color: #ffffff; --glass-bg: rgba(255, 255, 255, 0.1);}
+        .theme-gold { --bg-gradient: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728); --accent: #5e4b1a; --text-color: #333; --glass-bg: rgba(255,255,255,0.4); }
+        .theme-pink { --bg-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); --accent: #d63384; --text-color: #333; --glass-bg: rgba(255,255,255,0.3); }
+        .theme-blue { --bg-gradient: linear-gradient(135deg, #2193b0, #6dd5ed); --accent: #004e92; --text-color: #333; --glass-bg: rgba(255,255,255,0.2); }
 
-<style>
-:root{
-  --bg:#0b1220;
-  --glass:rgba(255,255,255,.15);
-  --border:rgba(255,255,255,.25);
-  --accent:#6ea8ff;
-  --text:#fff;
-}
-[data-theme="gold"]{--accent:#ffd166}
-[data-theme="pink"]{--accent:#ff7aa2}
-[data-theme="blue"]{--accent:#4cc9f0}
-[data-theme="space"]{--accent:#6ea8ff}
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
 
-*{box-sizing:border-box;font-family:system-ui}
-body{
-  margin:0;
-  min-height:100vh;
-  background:radial-gradient(circle at top,var(--accent),var(--bg));
-  color:var(--text);
-}
-.center{
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.card{
-  width:92%;
-  max-width:420px;
-  padding:20px;
-  border-radius:18px;
-  background:var(--glass);
-  backdrop-filter:blur(12px);
-  border:1px solid var(--border);
-  box-shadow:0 20px 50px rgba(0,0,0,.4);
-}
-h1,h2{margin:0 0 10px}
-input,textarea,select,button{
-  width:100%;
-  padding:10px;
-  margin:6px 0;
-  border-radius:10px;
-  border:none;
-}
-input,textarea,select{
-  background:rgba(255,255,255,.18);
-  color:white;
-}
-button{
-  background:var(--accent);
-  font-weight:700;
-}
-.hidden{display:none}
+        body {
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-color);
+            transition: all 0.5s ease;
+        }
 
-#gift{
-  font-size:60px;
-  text-align:center;
-  animation:bounce 1s infinite;
-  cursor:pointer;
-}
-@keyframes bounce{
-  0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-10px)}
-}
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            margin: 20px auto;
+        }
 
-.inbox{
-  max-height:200px;
-  overflow:auto;
-}
-.inbox div{
-  padding:8px;
-  border-bottom:1px solid var(--border);
-  font-size:13px;
-}
-</style>
+        .hidden { display: none !important; }
+        h1, h2, h3 { margin-bottom: 1.5rem; text-align: center; }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.1);
+            color: inherit;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:active { transform: scale(0.98); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .gift-box {
+            font-size: 80px;
+            text-align: center;
+            cursor: pointer;
+            animation: bounce 2s infinite;
+            margin: 20px 0;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .inbox-item {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            border-left: 4px solid var(--accent);
+        }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .decision-btns { display: flex; gap: 10px; }
+        .btn-accept { background: #2ecc71; }
+        .btn-reject { background: #e74c3c; }
+        .timestamp { font-size: 0.7rem; opacity: 0.7; }
+    </style>
 </head>
+<body class="theme-space">
 
-<body data-theme="space">
-
-<!-- LOGIN -->
-<div id="login" class="center">
-  <div class="card">
-    <h2>🎂 Birthday Surprise</h2>
-    <input id="loginCode" placeholder="Enter code">
-    <button onclick="handleLogin()">Enter</button>
-  </div>
-</div>
-
-<!-- ADMIN -->
-<div id="admin" class="hidden center">
-  <div class="card">
-    <h2>Admin Panel</h2>
-
-    <input id="u_name" placeholder="Name">
-    <input id="u_dob" placeholder="DOB (DD-MM)">
-    <input id="u_age" placeholder="Age">
-    <input id="u_code" placeholder="Login Code">
-    <input id="u_short" placeholder="Short Wish">
-    <textarea id="u_main" placeholder="Main Message"></textarea>
-    <textarea id="u_secret" placeholder="Secret Message"></textarea>
-
-    <select id="u_theme">
-      <option value="space">Space</option>
-      <option value="gold">Gold</option>
-      <option value="pink">Pink</option>
-      <option value="blue">Blue</option>
-    </select>
-
-    <label>
-      <input type="checkbox" id="u_decision"> Enable Accept / Reject
-    </label>
-
-    <button onclick="saveUser()">Save / Update</button>
-
-    <h3>Inbox</h3>
-    <div id="inbox" class="inbox"></div>
-  </div>
-</div>
-
-<!-- USER -->
-<div id="user" class="hidden center">
-  <div class="card">
-    <h1 id="name"></h1>
-    <p id="info"></p>
-    <p id="short"></p>
-    <p id="main"></p>
-
-    <div id="gift">🎁</div>
-    <p id="secret" class="hidden"></p>
-
-    <div id="decision" class="hidden">
-      <button onclick="sendDecision('Accepted')">Accept</button>
-      <button onclick="sendDecision('Rejected')">Reject</button>
+    <div id="loginSection" class="glass-card">
+        <h1>✨ Unlock Surprise</h1>
+        <input type="text" id="loginCode" placeholder="Enter Secret Code">
+        <button onclick="handleLogin()">Unlock Now</button>
     </div>
 
-    <textarea id="feedback" placeholder="Write something..."></textarea>
-    <button onclick="sendFeedback()">Send</button>
-  </div>
-</div>
+    <div id="adminSection" class="glass-card hidden">
+        <h2>Admin Panel</h2>
+        <div style="max-height: 80vh; overflow-y: auto; padding-right: 5px;">
+            <input type="text" id="adm-code" placeholder="Unique Login Code (Ex: BDAY01)">
+            <input type="text" id="adm-name" placeholder="User Name">
+            <div class="grid">
+                <input type="text" id="adm-dob" placeholder="DOB (DD-MM)">
+                <input type="number" id="adm-age" placeholder="Age">
+            </div>
+            <textarea id="adm-short" placeholder="Short Wish"></textarea>
+            <textarea id="adm-main" placeholder="Main Birthday Message"></textarea>
+            <textarea id="adm-secret" placeholder="Secret Message (Hidden in Gift)"></textarea>
+            <select id="adm-theme">
+                <option value="space">Space Theme (Dark)</option>
+                <option value="gold">Gold Theme (Premium)</option>
+                <option value="pink">Pink Theme (Cute)</option>
+                <option value="blue">Blue Theme (Calm)</option>
+            </select>
+            <label><input type="checkbox" id="adm-decision" style="width:auto"> Enable Accept/Reject</label>
+            <button onclick="saveUser()">Save User Data</button>
+            <hr style="margin:20px 0; opacity:0.2">
+            <h3>Inbox (Real-time)</h3>
+            <div id="inboxList"></div>
+            <button onclick="logout()" style="background:#555">Logout</button>
+        </div>
+    </div>
 
-<script>
-/* ================= CONFIG ================= */
-const ADMIN_CODE = "867055";
+    <div id="userSection" class="glass-card hidden">
+        <h2 id="u-name">Happy Birthday!</h2>
+        <p style="text-align:center; margin-bottom:10px;">📅 <span id="u-dob"></span> | Age: <span id="u-age"></span></p>
+        <p id="u-short" style="text-align:center; font-style:italic; color:var(--accent); margin-bottom:20px;"></p>
+        <div id="u-main" style="white-space: pre-wrap; margin-bottom:20px; line-height:1.5;"></div>
 
-const firebaseConfig = {
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyBep2gfvxIwUC_4H3RX3eNy3a1jwLAnEnc",
-  authDomain: "birthday-surprise-by-mg-e8ab4.firebaseapp.com",
-  projectId: "birthday-surprise-by-mg-e8ab4",
-  storageBucket: "birthday-surprise-by-mg-e8ab4.firebasestorage.app",
-  messagingSenderId: "327833090683",
-  appId: "1:327833090683:web:169d260ab875959d5d00de",
-  measurementId: "G-LQVDGZE5RQ"
-};
-};
+        <div id="giftContainer">
+            <div class="gift-box" onclick="revealSecret()">🎁</div>
+            <p style="text-align:center; font-size:0.8rem">Click to open gift!</p>
+        </div>
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-/* ========================================== */
+        <div id="secretArea" class="hidden">
+            <div style="padding:15px; border:2px dashed var(--accent); border-radius:10px; margin-bottom:20px;">
+                <strong>Secret Message:</strong><br><span id="u-secret"></span>
+            </div>
+        </div>
 
-let currentUser = "";
+        <div id="decisionArea" class="hidden">
+            <h3>Will you accept?</h3>
+            <div class="decision-btns">
+                <button id="btnAccept" class="btn-accept" onclick="submitDecision('Accepted')">Accept</button>
+                <button id="btnReject" class="btn-reject" onclick="submitDecision('Rejected')">Reject</button>
+            </div>
+        </div>
 
-/* LOGIN */
-function handleLogin(){
-  const code = loginCode.value.trim();
-  if(code === ADMIN_CODE){
-    login.classList.add("hidden");
-    admin.classList.remove("hidden");
-    loadInbox();
-    return;
-  }
+        <div id="feedbackArea" style="margin-top:20px;">
+            <textarea id="userMsg" placeholder="Write a reply..."></textarea>
+            <button onclick="sendFeedback()">Send to Admin</button>
+        </div>
+        <button onclick="logout()" style="background:transparent; font-size:0.7rem;">Exit</button>
+    </div>
 
-  db.ref("users/"+code).on("value", snap=>{
-    if(!snap.exists()){
-      alert("Invalid Code");
-      return;
-    }
-    currentUser = code;
-    showUser(snap.val());
-  });
-}
+    <script>
+        // --- UPDATED CONFIG WITH YOUR DATA ---
+        const ADMIN_CODE = "867055";
+        const firebaseConfig = {
+            apiKey: "AIzaSyBep2gfvxIwUC_4H3RX3eNy3a1jwLAnEnc",
+            authDomain: "birthday-surprise-by-mg-e8ab4.firebaseapp.com",
+            databaseURL: "https://birthday-surprise-by-mg-e8ab4-default-rtdb.firebaseio.com",
+            projectId: "birthday-surprise-by-mg-e8ab4",
+            storageBucket: "birthday-surprise-by-mg-e8ab4.firebasestorage.app",
+            messagingSenderId: "327833090683",
+            appId: "1:327833090683:web:169d260ab875959d5d00de",
+            measurementId: "G-LQVDGZE5RQ"
+        };
 
-/* ADMIN */
-function saveUser(){
-  const code = u_code.value.trim();
-  if(!code) return alert("Code required");
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        let currentUserCode = null;
 
-  db.ref("users/"+code).set({
-    name:u_name.value,
-    dob:u_dob.value,
-    age:u_age.value,
-    short:u_short.value,
-    main:u_main.value,
-    secret:u_secret.value,
-    theme:u_theme.value,
-    decision:u_decision.checked
-  });
-}
+        function handleLogin() {
+            const code = document.getElementById('loginCode').value.trim();
+            if (code === ADMIN_CODE) {
+                showSection('adminSection');
+                initAdminListeners();
+            } else if (code !== "") {
+                db.ref('users/' + code).once('value', snap => {
+                    if (snap.exists()) {
+                        currentUserCode = code;
+                        showSection('userSection');
+                        initUserListener(code);
+                    } else { alert("Invalid Code!"); }
+                });
+            }
+        }
 
-function loadInbox(){
-  db.ref("inbox").on("value", snap=>{
-    inbox.innerHTML="";
-    snap.forEach(s=>{
-      const d=s.val();
-      const div=document.createElement("div");
-      div.textContent = d.code+" : "+d.text;
-      inbox.prepend(div);
-    });
-  });
-}
+        function saveUser() {
+            const code = document.getElementById('adm-code').value.trim();
+            if (!code) return alert("Enter a code!");
+            const data = {
+                name: document.getElementById('adm-name').value,
+                dob: document.getElementById('adm-dob').value,
+                age: document.getElementById('adm-age').value,
+                shortWish: document.getElementById('adm-short').value,
+                mainMsg: document.getElementById('adm-main').value,
+                secretMsg: document.getElementById('adm-secret').value,
+                theme: document.getElementById('adm-theme').value,
+                enableDecision: document.getElementById('adm-decision').checked
+            };
+            db.ref('users/' + code).update(data).then(() => alert("Saved!"));
+        }
 
-/* USER */
-function showUser(d){
-  login.classList.add("hidden");
-  user.classList.remove("hidden");
+        function initAdminListeners() {
+            db.ref('inbox').on('value', snap => {
+                const list = document.getElementById('inboxList');
+                list.innerHTML = '';
+                const items = [];
+                snap.forEach(c => { items.push(c.val()); });
+                items.reverse().forEach(d => {
+                    const div = document.createElement('div');
+                    div.className = 'inbox-item';
+                    div.innerHTML = `<strong>${d.userCode}:</strong> ${d.content}<br><span class="timestamp">${new Date(d.timestamp).toLocaleString()}</span>`;
+                    list.appendChild(div);
+                });
+            });
+        }
 
-  document.body.dataset.theme = d.theme || "space";
+        function initUserListener(code) {
+            db.ref('users/' + code).on('value', snap => {
+                const d = snap.val();
+                if(!d) return;
+                document.body.className = 'theme-' + d.theme;
+                document.getElementById('u-name').innerText = "Happy Birthday, " + d.name + "!";
+                document.getElementById('u-dob').innerText = d.dob;
+                document.getElementById('u-age').innerText = d.age;
+                document.getElementById('u-short').innerText = d.shortWish;
+                document.getElementById('u-main').innerText = d.mainMsg;
+                document.getElementById('u-secret').innerText = d.secretMsg;
+                
+                if(d.enableDecision) {
+                    document.getElementById('decisionArea').classList.remove('hidden');
+                    if(d.decisionMade) disableDecision(d.decisionMade);
+                }
+            });
+        }
 
-  name.textContent = d.name;
-  info.textContent = d.age+" yrs • "+d.dob;
-  short.textContent = d.short;
-  main.textContent = d.main;
+        function revealSecret() {
+            document.getElementById('giftContainer').classList.add('hidden');
+            document.getElementById('secretArea').classList.remove('hidden');
+        }
 
-  gift.onclick = ()=>{
-    gift.classList.add("hidden");
-    secret.textContent = d.secret;
-    secret.classList.remove("hidden");
-    if(d.decision) decision.classList.remove("hidden");
-  };
-}
+        function submitDecision(choice) {
+            db.ref('users/' + currentUserCode).update({ decisionMade: choice });
+            db.ref('inbox').push({ userCode: currentUserCode, content: "DECISION: " + choice, timestamp: Date.now() });
+            disableDecision(choice);
+        }
 
-function sendFeedback(){
-  if(!feedback.value) return;
-  db.ref("inbox").push({
-    code:currentUser,
-    text:feedback.value,
-    time:Date.now()
-  });
-  feedback.value="";
-}
+        function disableDecision(choice) {
+            document.getElementById('btnAccept').disabled = true;
+            document.getElementById('btnReject').disabled = true;
+            document.getElementById('btn' + choice).innerText = "✓ " + choice;
+        }
 
-function sendDecision(val){
-  db.ref("inbox").push({
-    code:currentUser,
-    text:"Decision: "+val,
-    time:Date.now()
-  });
-  decision.querySelectorAll("button").forEach(b=>b.disabled=true);
-}
-</script>
+        function sendFeedback() {
+            const val = document.getElementById('userMsg').value;
+            if(!val) return;
+            db.ref('inbox').push({ userCode: currentUserCode, content: "MSG: " + val, timestamp: Date.now() });
+            document.getElementById('userMsg').value = "";
+            alert("Sent!");
+        }
 
+        function showSection(id) {
+            document.querySelectorAll('.glass-card').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function logout() { location.reload(); }
+    </script>
 </body>
 </html>
