@@ -3,267 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Birthday Portal</title>
+    <title>Birthday Surprise Portal</title>
     <style>
-        :root {
-            --primary: #1a73e8;
-            --glass: rgba(255, 255, 255, 0.1);
-            --bg: #050505;
-            --text: #ffffff;
-            --accent: #ff9800;
-        }
-
+        :root { --primary: #1a73e8; --glass: rgba(255, 255, 255, 0.1); --bg: #050505; --text: #ffffff; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; transition: background 0.5s ease; }
-
-        /* Glassmorphism Styling */
+        body { background: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; }
         .glass { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; }
-        .card { padding: 25px; margin: 20px auto; max-width: 480px; width: 92%; box-shadow: 0 8px 32px 0 rgba(0,0,0,0.8); }
-
-        /* Animations */
-        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
-        @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        .balloon { position: fixed; top: -100px; font-size: 30px; z-index: 1000; animation: fall 6s linear forwards; pointer-events: none; }
-
-        /* Form Elements */
-        input, textarea, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: none; background: rgba(255,255,255,0.08); color: #fff; font-size: 16px; outline: none; }
-        input:focus { background: rgba(255,255,255,0.15); border: 1px solid var(--primary); }
-        
-        button { width: 100%; padding: 15px; margin-top: 10px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; }
+        .card { padding: 20px; margin: 15px auto; max-width: 450px; width: 92%; }
+        input, textarea, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: none; background: rgba(255,255,255,0.08); color: #fff; }
+        button { width: 100%; padding: 15px; margin-top: 10px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
         .btn-primary { background: var(--primary); color: #fff; }
-        .btn-danger { background: #d32f2f; color: #fff; }
         .btn-success { background: #2e7d32; color: #fff; }
-        .btn-outline { background: transparent; border: 1px solid #444; color: #fff; }
-
-        /* Section Control */
-        .section { display: none; padding: 20px; animation: fadeIn 0.5s ease-out; }
-        #loginSection { display: block; margin-top: 12vh; }
-
-        /* Admin Dashboard Components */
-        .admin-item { margin-bottom: 30px; padding: 20px; border-left: 5px solid var(--primary); background: rgba(255,255,255,0.04); border-radius: 0 15px 15px 0; position: relative; }
-        .toggle-container { display: flex; align-items: center; justify-content: space-between; margin: 15px 0; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; }
-        
-        /* Gift & Secret Reveal */
-        #giftBox { font-size: 90px; cursor: pointer; animation: bounce 2s infinite; margin: 40px auto; width: fit-content; filter: drop-shadow(0 0 10px var(--accent)); }
-        #secretContent { display: none; padding: 25px; border: 2px dashed var(--accent); margin-top: 25px; border-radius: 20px; background: rgba(255, 152, 0, 0.08); }
-
-        /* Theme Gradients */
-        .theme-pink { background: linear-gradient(135deg, #421030 0%, #050505 100%); }
-        .theme-blue { background: linear-gradient(135deg, #102a42 0%, #050505 100%); }
-        .theme-gold { background: linear-gradient(135deg, #423b10 0%, #050505 100%); }
-        .theme-space { background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%); }
-
-        .feedback-card { background: rgba(0,0,0,0.5); padding: 15px; margin-top: 12px; border-radius: 12px; font-size: 14px; border-left: 3px solid #e91e63; text-align: left; }
+        .btn-danger { background: #d32f2f; color: #fff; }
+        .section { display: none; padding: 20px; }
+        #loginSection { display: block; margin-top: 15vh; }
+        .admin-item { margin-bottom: 25px; padding: 15px; border-left: 4px solid var(--primary); background: rgba(255,255,255,0.03); border-radius: 10px; }
+        .feedback-card { background: rgba(0,0,0,0.5); padding: 12px; margin-top: 8px; border-radius: 10px; border-left: 3px solid #e91e63; font-size: 14px; text-align: left; }
     </style>
 </head>
-<body class="theme-space">
+<body>
 
     <div id="loginSection" class="section">
         <div class="card glass">
-            <h1 style="text-align: center; color: var(--primary); margin-bottom: 10px;">Surprise Portal</h1>
-            <p style="text-align: center; color: #888; margin-bottom: 25px;">Enter your unique code to begin</p>
-            <input type="text" id="accessCode" placeholder="Access Code">
-            <button class="btn-primary" onclick="handleLogin()">Unlock Surprise 🔓</button>
-            <div style="display: flex; gap: 10px; margin-top: 10px;">
-                <button class="btn-outline" onclick="location.reload()">Refresh</button>
-                <button class="btn-outline" style="background: #111;" onclick="window.close()">Exit</button>
-            </div>
+            <h2 style="text-align: center; color: var(--primary);">Surprise Portal</h2>
+            <input type="text" id="accessCode" placeholder="Enter Access Code">
+            <button class="btn-primary" onclick="handleLogin()">Unlock Now 🔓</button>
         </div>
     </div>
 
     <div id="adminPage" class="section">
-        <h2 style="text-align: center; margin-bottom: 20px;">Admin Dashboard</h2>
+        <h2 style="text-align: center; margin-bottom: 10px;">Admin Dashboard</h2>
         
         <div class="card glass">
-            <h3 style="color: #e91e63; margin-bottom: 15px;">Live Responses (Inbox)</h3>
-            <button class="btn-primary" onclick="loadInbox()" style="padding: 8px; font-size: 12px; margin-bottom: 15px; width: auto;">Refresh Inbox</button>
-            <div id="inboxContainer" style="max-height: 300px; overflow-y: auto; padding-right: 5px;">Refreshing...</div>
+            <h3 style="color: #e91e63;">Live Responses (Inbox)</h3>
+            <button class="btn-primary" onclick="loadInbox()" style="width: auto; padding: 5px 15px; font-size: 12px;">Refresh Inbox</button>
+            <div id="inboxContainer">Click Refresh</div>
         </div>
 
         <div id="userListContainer"></div>
 
-        <div class="card glass" style="position: sticky; bottom: 20px; z-index: 100;">
-            <button class="btn-success" onclick="addNewProfile()">+ Add New Friend</button>
-            <button class="btn-primary" onclick="saveAllData()" style="background: #d32f2f;">Save All Profiles</button>
-            <button class="btn-outline" style="margin-top: 15px;" onclick="location.reload()">Logout Admin</button>
+        <div class="card glass">
+            <button class="btn-success" onclick="addNewProfile()">+ ADD NEW FRIEND</button>
+            <button class="btn-danger" style="margin-top: 15px;" onclick="saveAllData()">SAVE ALL PROFILES</button>
+            <button style="background: #333;" onclick="location.reload()">LOGOUT</button>
         </div>
     </div>
 
     <div id="userPage" class="section">
-        <div class="card glass" style="text-align: center; max-width: 600px;">
-            <h1 id="uWish" style="color: var(--accent); font-size: 2.8rem; margin-bottom: 15px; text-shadow: 0 0 15px rgba(255,152,0,0.5);"></h1>
-            <h2 id="uName" style="font-size: 2.2rem; margin-bottom: 5px;"></h2>
-            <div style="display: inline-block; padding: 5px 20px; border-radius: 30px; background: rgba(255,255,255,0.1); margin-bottom: 25px;">
-                <span id="uDetails" style="font-weight: bold; color: var(--primary);"></span>
-            </div>
-            
-            <p id="uMsg" style="line-height: 1.8; font-size: 1.15rem; text-align: left; padding: 0 10px; color: #ddd;"></p>
-
-            <div id="giftBox" onclick="openGift()">🎁</div>
-
-            <div id="secretContent">
-                <h3 style="color: var(--accent); text-transform: uppercase; margin-bottom: 15px; letter-spacing: 2px;">Secret Message</h3>
-                <p id="uSecret" style="font-size: 1.2rem; font-style: italic;"></p>
-                <div id="decisionBox" style="margin-top: 30px; display: none; gap: 15px; justify-content: center;">
-                    <button class="btn-success" id="btnAccept" style="flex: 1;" onclick="submitDecision('ACCEPT')">Accept</button>
-                    <button class="btn-danger" id="btnReject" style="flex: 1;" onclick="submitDecision('REJECT')">Reject</button>
-                </div>
-            </div>
-
-            <div style="margin-top: 50px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px;">
-                <h4 style="margin-bottom: 15px; opacity: 0.7;">Send a quick feedback:</h4>
-                <textarea id="uFeedback" placeholder="Write your response here..." rows="3"></textarea>
-                <button class="btn-primary" onclick="submitFeedback()">Submit Feedback</button>
-            </div>
-            <button class="btn-outline" style="margin-top: 30px; width: 120px;" onclick="location.reload()">Close</button>
+        <div class="card glass" style="text-align: center;">
+            <h1 id="uWish" style="color: #ff9800;"></h1>
+            <h2 id="uName"></h2>
+            <p id="uDetails" style="opacity: 0.7;"></p>
+            <p id="uMsg" style="margin-top: 15px; text-align: left;"></p>
+            <div id="gift" style="font-size: 80px; cursor: pointer; margin: 20px;" onclick="alert('Unlocked: ' + currentSecret)">🎁</div>
+            <button style="background: #333;" onclick="location.reload()">Close</button>
         </div>
     </div>
 
     <script>
-        // CONFIG
         const ADMIN_CODE = "867055";
-        const TS_WRITE_KEY = "ZOMVHDCOLTH4GKMG"; 
-        const TS_CHANNEL_ID = "3235968";
+        const TS_WRITE_KEY = "ZOMVHDCOLTH4GKMG"; // PUT KEY
+        const TS_CHANNEL_ID = "3235968"; // AS PER SCREENSHOT
 
         let profiles = JSON.parse(localStorage.getItem('bday_profiles')) || [];
+        let currentSecret = "";
 
-        // LOGIN HANDLER
         function handleLogin() {
-            const code = document.getElementById('accessCode').value.trim();
-            if(code === ADMIN_CODE) {
-                showSection('adminPage');
-                renderAdminProfiles();
-                loadInbox();
-                return;
-            }
-
+            const code = document.getElementById('accessCode').value;
+            if(code === ADMIN_CODE) { showSection('adminPage'); renderAdminProfiles(); loadInbox(); return; }
             const user = profiles.find(p => p.code === code);
-            if(user) {
-                triggerBalloons();
-                displayUserSurprise(user);
-                return;
-            }
-            alert("Oops! That code doesn't seem right.");
+            if(user) { displayUser(user); return; }
+            alert("Code Not Found!");
         }
 
         function showSection(id) {
             document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
             document.getElementById(id).style.display = 'block';
-            window.scrollTo(0,0);
         }
 
-        // ADMIN LOGIC
         function renderAdminProfiles() {
             const container = document.getElementById('userListContainer');
             container.innerHTML = "";
             profiles.forEach((p, i) => {
-                const item = document.createElement('div');
-                item.className = "card glass admin-item";
-                item.innerHTML = `
-                    <h4 style="color: var(--primary); margin-bottom: 10px;">Friend #${i+1}</h4>
-                    <input type="text" placeholder="Full Name" oninput="profiles[${i}].name=this.value" value="${p.name}">
-                    <input type="text" placeholder="DOB (e.g. 24th Oct)" oninput="profiles[${i}].dob=this.value" value="${p.dob}">
-                    <input type="number" placeholder="Age" oninput="profiles[${i}].age=this.value" value="${p.age}">
-                    <input type="text" placeholder="Access Code (Unique)" oninput="profiles[${i}].code=this.value" value="${p.code}">
-                    <input type="text" placeholder="Short Wish" oninput="profiles[${i}].wish=this.value" value="${p.wish}">
-                    <textarea placeholder="Main Birthday Message" oninput="profiles[${i}].msg=this.value">${p.msg}</textarea>
-                    <textarea placeholder="The Secret Message" oninput="profiles[${i}].secret=this.value">${p.secret}</textarea>
-                    <select onchange="profiles[${i}].theme=this.value">
-                        <option value="space" ${p.theme==='space'?'selected':''}>Galaxy Theme</option>
-                        <option value="pink" ${p.theme==='pink'?'selected':''}>Romantic Pink</option>
-                        <option value="blue" ${p.theme==='blue'?'selected':''}>Classic Blue</option>
-                        <option value="gold" ${p.theme==='gold'?'selected':''}>Elegant Gold</option>
-                    </select>
-                    <div class="toggle-container">
-                        <span>Show Accept/Reject Buttons?</span>
-                        <input type="checkbox" style="width: 25px;" onchange="profiles[${i}].decide=this.checked" ${p.decide?'checked':''}>
-                    </div>
-                    <button class="btn-danger" style="padding: 8px; font-size: 11px;" onclick="deleteProfile(${i})">Remove Profile</button>
-                `;
-                container.appendChild(item);
+                container.innerHTML += `
+                <div class="card glass admin-item">
+                    <input type="text" placeholder="Name" oninput="profiles[${i}].name=this.value" value="${p.name}">
+                    <input type="text" placeholder="Code" oninput="profiles[${i}].code=this.value" value="${p.code}">
+                    <input type="text" placeholder="DOB" oninput="profiles[${i}].dob=this.value" value="${p.dob}">
+                    <input type="text" placeholder="Wish" oninput="profiles[${i}].wish=this.value" value="${p.wish}">
+                    <textarea placeholder="Message" oninput="profiles[${i}].msg=this.value">${p.msg}</textarea>
+                    <textarea placeholder="Secret Message" oninput="profiles[${i}].secret=this.value">${p.secret}</textarea>
+                    <button class="btn-danger" style="padding: 5px; font-size: 10px;" onclick="profiles.splice(${i},1);renderAdminProfiles();">Delete</button>
+                </div>`;
             });
         }
 
         function addNewProfile() {
-            profiles.push({ name: "", dob: "", age: "", code: "", wish: "", msg: "", secret: "", theme: "space", decide: false });
+            profiles.push({ name: "", dob: "", code: "", wish: "", msg: "", secret: "" });
             renderAdminProfiles();
-            setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 100);
+            window.scrollTo(0, document.body.scrollHeight);
         }
 
-        function deleteProfile(i) { if(confirm("Are you sure?")) { profiles.splice(i, 1); renderAdminProfiles(); } }
-        function saveAllData() { localStorage.setItem('bday_profiles', JSON.stringify(profiles)); alert("Settings Saved Successfully!"); }
+        function saveAllData() {
+            localStorage.setItem('bday_profiles', JSON.stringify(profiles));
+            alert("Friends Saved Successfully!");
+        }
 
-        // USER VIEW
-        function displayUserSurprise(user) {
-            document.body.className = 'theme-' + user.theme;
+        function displayUser(user) {
             showSection('userPage');
-            document.getElementById('uWish').innerText = user.wish || "Happy Birthday!";
-            document.getElementById('uName').innerText = user.name || "Friend";
-            document.getElementById('uDetails').innerText = `Birthday: ${user.dob || 'Today'} | Age: ${user.age || '??'}`;
-            document.getElementById('uMsg').innerText = user.msg || "Wishing you all the best!";
-            document.getElementById('uSecret').innerText = user.secret || "No secret message set.";
-            document.getElementById('decisionBox').style.display = user.decide ? 'flex' : 'none';
-        }
-
-        function openGift() {
-            document.getElementById('giftBox').style.animation = 'none';
-            document.getElementById('giftBox').innerText = '🎁✨';
-            document.getElementById('secretContent').style.display = 'block';
-        }
-
-        function triggerBalloons() {
-            for(let i=0; i<35; i++) {
-                let b = document.createElement('div');
-                b.className = 'balloon';
-                b.innerText = ['🎈','🎉','🎂','💖','🥳'][Math.floor(Math.random()*5)];
-                b.style.left = Math.random() * 100 + 'vw';
-                b.style.animationDelay = Math.random() * 3 + 's';
-                document.body.appendChild(b);
-            }
-        }
-
-        // THING-SPEAK INTEGRATION
-        function submitDecision(type) {
-            const code = document.getElementById('accessCode').value;
-            const url = `https://api.thingspeak.com/update?api_key=${TS_WRITE_KEY}&field3=Code[${code}]:Choice[${type}]`;
-            fetch(url).then(() => {
-                alert("Choice Registered!");
-                document.getElementById('btnAccept').disabled = true;
-                document.getElementById('btnReject').disabled = true;
-                document.getElementById('btnAccept').style.opacity = "0.5";
-                document.getElementById('btnReject').style.opacity = "0.5";
-            });
-        }
-
-        function submitFeedback() {
-            const code = document.getElementById('accessCode').value;
-            const val = document.getElementById('uFeedback').value;
-            if(!val) return;
-            const url = `https://api.thingspeak.com/update?api_key=${TS_WRITE_KEY}&field3=Code[${code}]:Msg[${val}]`;
-            fetch(url).then(() => {
-                alert("Message Sent to Admin!");
-                document.getElementById('uFeedback').value = "";
-            });
+            document.getElementById('uName').innerText = user.name;
+            document.getElementById('uWish').innerText = user.wish;
+            document.getElementById('uDetails').innerText = "Birthday: " + user.dob;
+            document.getElementById('uMsg').innerText = user.msg;
+            currentSecret = user.secret;
         }
 
         function loadInbox() {
             const container = document.getElementById('inboxContainer');
-            container.innerHTML = "Fetching messages...";
-            fetch(`https://api.thingspeak.com/channels/${TS_CHANNEL_ID}/fields/3.json?results=20`)
+            fetch(`https://api.thingspeak.com/channels/${TS_CHANNEL_ID}/fields/3.json?results=10`)
             .then(r => r.json()).then(data => {
                 container.innerHTML = "";
-                if(!data.feeds || data.feeds.length === 0) { container.innerHTML = "No data yet."; return; }
                 data.feeds.reverse().forEach(f => {
-                    if(f.field3) {
-                        container.innerHTML += `<div class="feedback-card">
-                            <strong>${f.field3}</strong><br>
-                            <small style="opacity: 0.6;">${new Date(f.created_at).toLocaleString()}</small>
-                        </div>`;
-                    }
+                    if(f.field3) container.innerHTML += `<div class="feedback-card"><b>${f.field3}</b></div>`;
                 });
-            }).catch(() => container.innerHTML = "Offline/API Error");
+            });
         }
     </script>
 </body>
