@@ -1,264 +1,271 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birthday Surprise Portal</title>
-    <style>
-        /* ================= CSS: GLASSMORPHISM & THEMES ================= */
-        :root {
-            --glass: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --bg: #0f0c29;
-            --primary: #00d2ff;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Birthday Surprise</title>
 
-        body {
-            margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--bg); color: white; transition: 0.5s; overflow-x: hidden;
-        }
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-        /* Themes */
-        .theme-pink { background: linear-gradient(to right, #ec008c, #fc6767); }
-        .theme-blue { background: linear-gradient(to right, #2193b0, #6dd5ed); }
-        .theme-gold { background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728); color: #333; }
-        .theme-space { background: radial-gradient(circle, #24243e, #302b63, #0f0c29); }
+<style>
+:root{
+  --bg:#0b0f1a;
+  --card:rgba(255,255,255,0.12);
+  --border:rgba(255,255,255,0.25);
+  --text:#fff;
+  --accent:#7aa2ff;
+}
 
-        .glass {
-            background: var(--glass); backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border); border-radius: 15px; padding: 20px;
-        }
+/* Themes */
+[data-theme="space"]{--accent:#7aa2ff;}
+[data-theme="gold"]{--accent:#ffd166;}
+[data-theme="pink"]{--accent:#ff7aa2;}
+[data-theme="blue"]{--accent:#4cc9f0;}
 
-        .container { max-width: 500px; margin: auto; padding: 20px; text-align: center; }
-        .section { display: none; animation: fadeIn 0.8s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+*{box-sizing:border-box;font-family:system-ui}
+body{
+  margin:0;
+  background:radial-gradient(circle at top,var(--accent),var(--bg));
+  color:var(--text);
+  min-height:100vh;
+}
 
-        input, textarea, select {
-            width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px;
-            border: none; background: rgba(255,255,255,0.2); color: white; outline: none; box-sizing: border-box;
-        }
-        input::placeholder { color: #eee; }
+.center{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+}
 
-        .btn {
-            padding: 12px 25px; border-radius: 30px; border: none; cursor: pointer;
-            font-weight: bold; transition: 0.3s; margin: 5px;
-        }
-        .btn-primary { background: #00d2ff; color: #000; }
-        .btn-danger { background: #ff4b2b; color: #fff; }
+.card{
+  backdrop-filter:blur(12px);
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:20px;
+  width:95%;
+  max-width:420px;
+  box-shadow:0 0 40px rgba(0,0,0,.4);
+}
 
-        /* Gift Box Animation */
-        #giftBox { font-size: 80px; cursor: pointer; animation: bounce 2s infinite; }
-        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-20px);} 60% {transform: translateY(-10px);} }
+h1,h2{margin:0 0 10px}
+input,textarea,select,button{
+  width:100%;
+  margin:6px 0;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+}
+input,textarea,select{
+  background:rgba(255,255,255,.15);
+  color:white;
+}
+button{
+  background:var(--accent);
+  font-weight:700;
+  cursor:pointer;
+}
+button:disabled{opacity:.5}
 
-        /* Balloon Animation */
-        .balloon { position: fixed; bottom: -50px; font-size: 30px; animation: floatUp 4s linear forwards; z-index: 100; }
-        @keyframes floatUp { to { transform: translateY(-110vh); } }
+.hidden{display:none}
 
-        .admin-item { margin-bottom: 20px; text-align: left; }
-        .feedback-card { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 14px; }
-    </style>
+/* Gift */
+#gift{
+  font-size:64px;
+  text-align:center;
+  animation:bounce 1s infinite;
+  cursor:pointer;
+}
+@keyframes bounce{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-10px)}
+}
+
+/* Inbox */
+.inbox{
+  max-height:200px;
+  overflow:auto;
+  margin-top:10px;
+}
+.inbox .item{
+  padding:10px;
+  border-bottom:1px solid var(--border);
+  font-size:14px;
+}
+</style>
 </head>
-<body class="theme-space">
 
-    <div class="container">
-        <div id="loginPage" class="section" style="display: block;">
-            <h1>✨ Special Portal ✨</h1>
-            <p>Enter your secret access code</p>
-            <div class="glass">
-                <input type="password" id="accessCode" placeholder="Secret Code...">
-                <button class="btn btn-primary" onclick="handleLogin()">Unlock Surprise</button>
-            </div>
-        </div>
+<body data-theme="space">
 
-        <div id="adminPage" class="section">
-            <h2>Admin Control</h2>
-            <button class="btn btn-primary" onclick="addNewProfile()">+ Add Friend</button>
-            <button class="btn btn-danger" onclick="location.reload()">Logout</button>
-            
-            <div id="userListContainer"></div>
+<div id="login" class="center">
+  <div class="card">
+    <h2>🎂 Birthday Surprise</h2>
+    <input id="code" placeholder="Enter Code">
+    <button onclick="login()">Enter</button>
+  </div>
+</div>
 
-            <hr>
-            <h3>Inbox (ThingSpeak)</h3>
-            <button class="btn btn-primary" onclick="loadInbox()">Refresh Inbox</button>
-            <div id="inboxContainer" class="glass"></div>
-        </div>
+<div id="admin" class="hidden center">
+  <div class="card">
+    <h2>Admin Dashboard</h2>
 
-        <div id="userPage" class="section">
-            <h1 id="uWish">Happy Birthday</h1>
-            <h2 id="uName"></h2>
-            <p id="uDetails"></p>
-            
-            <div class="glass">
-                <p id="uMsg" style="white-space: pre-wrap;"></p>
-            </div>
+    <input id="a_name" placeholder="Name">
+    <input id="a_dob" placeholder="DOB (DD-MM)">
+    <input id="a_age" placeholder="Age">
+    <input id="a_code" placeholder="Login Code">
+    <input id="a_short" placeholder="Short Wish">
+    <textarea id="a_main" placeholder="Main Message"></textarea>
+    <textarea id="a_secret" placeholder="Secret Message"></textarea>
+    <select id="a_theme">
+      <option value="space">Space</option>
+      <option value="gold">Gold</option>
+      <option value="pink">Pink</option>
+      <option value="blue">Blue</option>
+    </select>
+    <label><input type="checkbox" id="a_decision"> Enable Decision</label>
+    <button onclick="saveUser()">Save / Update</button>
 
-            <div id="giftContainer" style="margin-top: 30px;">
-                <div id="giftBox" onclick="openGift()">🎁</div>
-                <div id="secretContent" style="display:none;" class="glass">
-                    <h3>Secret Message:</h3>
-                    <p id="uSecret"></p>
-                    
-                    <div id="decisionBox" style="display:none; justify-content: center; gap: 10px;">
-                        <button id="btnAccept" class="btn btn-primary" onclick="submitDecision('ACCEPTED')">Accept</button>
-                        <button id="btnReject" class="btn btn-danger" onclick="submitDecision('REJECTED')">Reject</button>
-                    </div>
-                </div>
-            </div>
+    <h3>📥 Inbox</h3>
+    <div id="inbox" class="inbox"></div>
+  </div>
+</div>
 
-            <div class="glass" style="margin-top: 20px;">
-                <textarea id="uFeedback" placeholder="Send a thank you message..."></textarea>
-                <button class="btn btn-primary" onclick="submitFeedback()">Send Feedback</button>
-            </div>
-            <button class="btn btn-danger" style="margin-top: 20px;" onclick="location.reload()">Exit</button>
-        </div>
+<div id="user" class="hidden center">
+  <div class="card">
+    <h1 id="u_name"></h1>
+    <p id="u_info"></p>
+    <p id="u_short"></p>
+    <p id="u_main"></p>
+
+    <div id="gift">🎁</div>
+    <p id="secret" class="hidden"></p>
+
+    <div id="decision" class="hidden">
+      <button onclick="sendDecision('Accepted')">Accept</button>
+      <button onclick="sendDecision('Rejected')">Reject</button>
     </div>
 
-    <script>
-        /* ================= CONFIG (Update your keys) ================= */
-        const ADMIN_CODE = "867055";
-        const TS_WRITE_KEY = "ZOMVHDCOLTH4GKMG"; // ThingSpeak Write Key
-        const TS_CHANNEL_ID = "3235968"; // ThingSpeak Channel ID
+    <textarea id="feedback" placeholder="Write a message..."></textarea>
+    <button onclick="sendFeedback()">Send</button>
+  </div>
+</div>
 
-        let profiles = JSON.parse(localStorage.getItem("bday_profiles")) || [];
-        let CURRENT_USER = null;
+<script>
+const ADMIN_CODE="867055";
 
-        /* ================= AUTH ================= */
-        function handleLogin() {
-            const code = document.getElementById("accessCode").value.trim();
-            if (code === ADMIN_CODE) {
-                showSection("adminPage");
-                renderAdminProfiles();
-                loadInbox();
-                return;
-            }
-            const user = profiles.find(p => p.code === code);
-            if (user) {
-                CURRENT_USER = user;
-                triggerBalloons();
-                displayUserSurprise(user);
-            } else {
-                alert("Invalid Access Code!");
-            }
-        }
+/* Firebase */
+const firebaseConfig={
+ // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-        /* ================= UI CONTROLS ================= */
-        function showSection(id) {
-            document.querySelectorAll(".section").forEach(s => s.style.display = "none");
-            document.getElementById(id).style.display = "block";
-        }
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBep2gfvxIwUC_4H3RX3eNy3a1jwLAnEnc",
+  authDomain: "birthday-surprise-by-mg-e8ab4.firebaseapp.com",
+  projectId: "birthday-surprise-by-mg-e8ab4",
+  storageBucket: "birthday-surprise-by-mg-e8ab4.firebasestorage.app",
+  messagingSenderId: "327833090683",
+  appId: "1:327833090683:web:169d260ab875959d5d00de",
+  measurementId: "G-LQVDGZE5RQ"
+};
 
-        /* ================= ADMIN LOGIC ================= */
-        function renderAdminProfiles() {
-            const container = document.getElementById("userListContainer");
-            container.innerHTML = "";
-            profiles.forEach((p, i) => {
-                const div = document.createElement("div");
-                div.className = "card glass admin-item";
-                div.innerHTML = `
-                    <h4>Friend: ${p.name || 'New'}</h4>
-                    <input value="${p.name}" placeholder="Name" oninput="profiles[${i}].name=this.value; autoSave()">
-                    <input value="${p.dob}" placeholder="DOB (DD-MM)" oninput="profiles[${i}].dob=this.value; autoSave()">
-                    <input value="${p.age}" placeholder="Age" oninput="profiles[${i}].age=this.value; autoSave()">
-                    <input value="${p.code}" placeholder="Login Code" oninput="profiles[${i}].code=this.value; autoSave()">
-                    <input value="${p.wish}" placeholder="Short Wish" oninput="profiles[${i}].wish=this.value; autoSave()">
-                    <textarea placeholder="Main Message" oninput="profiles[${i}].msg=this.value; autoSave()">${p.msg}</textarea>
-                    <textarea placeholder="Secret Message" oninput="profiles[${i}].secret=this.value; autoSave()">${p.secret}</textarea>
-                    <select onchange="profiles[${i}].theme=this.value; autoSave()">
-                        <option value="space" ${p.theme==='space'?'selected':''}>Space</option>
-                        <option value="pink" ${p.theme==='pink'?'selected':''}>Pink</option>
-                        <option value="blue" ${p.theme==='blue'?'selected':''}>Blue</option>
-                        <option value="gold" ${p.theme==='gold'?'selected':''}>Gold</option>
-                    </select>
-                    <label style="display:block; margin: 10px 0;">
-                        <input type="checkbox" ${p.decide ? "checked" : ""} onchange="profiles[${i}].decide=this.checked; autoSave()"> Enable Accept/Reject
-                    </label>
-                    <button onclick="deleteProfile(${i})" class="btn btn-danger">Delete</button>
-                `;
-                container.appendChild(div);
-            });
-        }
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
 
-        function addNewProfile() {
-            profiles.push({ name: "", dob: "", age: "", code: "", wish: "", msg: "", secret: "", theme: "space", decide: false });
-            renderAdminProfiles();
-        }
+let currentUser=null;
 
-        function deleteProfile(i) {
-            if(confirm("Are you sure?")) { profiles.splice(i, 1); autoSave(); renderAdminProfiles(); }
-        }
+/* Login */
+function login(){
+  const c=code.value.trim();
+  if(c===ADMIN_CODE){
+    login.classList.add("hidden");
+    admin.classList.remove("hidden");
+    loadInbox();
+    return;
+  }
+  firebase.database().ref("users/"+c).onValue(s=>{
+    if(!s.exists())return alert("Invalid Code");
+    currentUser=c;
+    showUser(s.val());
+  });
+}
 
-        function autoSave() { localStorage.setItem("bday_profiles", JSON.stringify(profiles)); }
+/* Admin */
+function saveUser(){
+  const code=a_code.value.trim();
+  if(!code)return;
+  firebase.database().ref("users/"+code).set({
+    name:a_name.value,
+    dob:a_dob.value,
+    age:a_age.value,
+    short:a_short.value,
+    main:a_main.value,
+    secret:a_secret.value,
+    theme:a_theme.value,
+    decisionEnabled:a_decision.checked
+  });
+}
 
-        /* ================= USER LOGIC ================= */
-        function displayUserSurprise(user) {
-            document.body.className = "theme-" + user.theme;
-            showSection("userPage");
-            document.getElementById("uWish").innerText = user.wish || "Happy Birthday!";
-            document.getElementById("uName").innerText = user.name;
-            document.getElementById("uDetails").innerText = `DOB: ${user.dob} | Age: ${user.age}`;
-            document.getElementById("uMsg").innerText = user.msg;
-            document.getElementById("uSecret").innerText = user.secret;
-            document.getElementById("decisionBox").style.display = user.decide ? "flex" : "none";
-        }
+function loadInbox(){
+  firebase.database().ref("inbox").onValue(s=>{
+    inbox.innerHTML="";
+    s.forEach(c=>{
+      const d=c.val();
+      const div=document.createElement("div");
+      div.className="item";
+      div.textContent=`${d.code}: ${d.text}`;
+      inbox.prepend(div);
+    });
+  });
+}
 
-        function openGift() {
-            document.getElementById("giftBox").style.display = "none";
-            document.getElementById("secretContent").style.display = "block";
-        }
+/* User */
+function showUser(d){
+  login.classList.add("hidden");
+  user.classList.remove("hidden");
+  document.body.dataset.theme=d.theme;
+  u_name.textContent=d.name;
+  u_info.textContent=`${d.age} yrs • ${d.dob}`;
+  u_short.textContent=d.short;
+  u_main.textContent=d.main;
+  gift.onclick=()=>{
+    gift.classList.add("hidden");
+    secret.textContent=d.secret;
+    secret.classList.remove("hidden");
+    if(d.decisionEnabled)decision.classList.remove("hidden");
+  };
+}
 
-        /* ================= EXTERNAL API (ThingSpeak) ================= */
-        function submitDecision(choice) {
-            const btnA = document.getElementById("btnAccept");
-            const btnR = document.getElementById("btnReject");
-            
-            fetch(`https://api.thingspeak.com/update?api_key=${TS_WRITE_KEY}&field3=Code[${CURRENT_USER.code}]:Decision[${choice}]`)
-            .then(() => {
-                alert("Decision Sent!");
-                btnA.disabled = btnR.disabled = true;
-                btnA.style.opacity = btnR.style.opacity = "0.5";
-            });
-        }
+/* Feedback */
+function sendFeedback(){
+  if(!feedback.value)return;
+  firebase.database().ref("inbox").push({
+    code:currentUser,
+    text:feedback.value,
+    time:Date.now()
+  });
+  feedback.value="";
+}
 
-        function submitFeedback() {
-            const msg = document.getElementById("uFeedback").value.trim();
-            if (!msg) return;
-            fetch(`https://api.thingspeak.com/update?api_key=${TS_WRITE_KEY}&field3=Code[${CURRENT_USER.code}]:Msg[${msg}]`)
-            .then(() => {
-                alert("Feedback Sent!");
-                document.getElementById("uFeedback").value = "";
-            });
-        }
-
-        function loadInbox() {
-            const box = document.getElementById("inboxContainer");
-            box.innerHTML = "Fetching messages...";
-            fetch(`https://api.thingspeak.com/channels/${TS_CHANNEL_ID}/feeds.json?results=15`)
-            .then(r => r.json())
-            .then(data => {
-                box.innerHTML = "";
-                data.feeds.reverse().forEach(f => {
-                    if (f.field3) {
-                        const div = document.createElement("div");
-                        div.className = "feedback-card";
-                        div.innerHTML = `<strong>${f.field3}</strong><br><small>${new Date(f.created_at).toLocaleString()}</small>`;
-                        box.appendChild(div);
-                    }
-                });
-            }).catch(() => box.innerHTML = "Error loading inbox.");
-        }
-
-        function triggerBalloons() {
-            for (let i = 0; i < 20; i++) {
-                setTimeout(() => {
-                    const b = document.createElement("div");
-                    b.className = "balloon";
-                    b.innerText = ["🎈", "🎉", "✨", "🥳"][Math.floor(Math.random() * 4)];
-                    b.style.left = Math.random() * 100 + "vw";
-                    document.body.appendChild(b);
-                    setTimeout(() => b.remove(), 4000);
-                }, i * 200);
-            }
-        }
-    </script>
+/* Decision */
+function sendDecision(v){
+  firebase.database().ref("inbox").push({
+    code:currentUser,
+    text:"Decision: "+v,
+    time:Date.now()
+  });
+  decision.querySelectorAll("button").forEach(b=>b.disabled=true);
+}
+</script>
 </body>
 </html>
