@@ -308,7 +308,9 @@
         function disableDecision(choice) {
             document.getElementById('btnAccept').disabled = true;
             document.getElementById('btnReject').disabled = true;
-            document.getElementById('btn' + choice).innerText = "Selected: " + choice;
+            // Map choice to button ID: 'Accepted' -> 'btnAccept', 'Rejected' -> 'btnReject'
+            const btnId = choice === 'Accepted' ? 'btnAccept' : 'btnReject';
+            document.getElementById(btnId).innerText = "Selected: " + choice;
         }
 
         function sendFeedback() {
