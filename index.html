@@ -1,35 +1,332 @@
-<script>
-// Existing Logic...
-function openGift() {
-    // Your logic for opening the gift
-    displayDecisionArea(); // Show decision area only after gift is opened
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-B4Z4ZX2JNJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-B4Z4ZX2JNJ');
+    </script>
 
-function displayDecisionArea() {
-    // Animation and transition effects for Accept/Reject buttons
-    const decisionArea = document.getElementById('decisionArea');
-    decisionArea.style.opacity = 0; // Start hidden
-    decisionArea.style.transition = 'opacity 0.5s ease-in';
-    decisionArea.style.display = 'block';
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Surprise Pro Max</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-    setTimeout(() => {
-        decisionArea.style.opacity = 1; // Fade in
-        celebrate(); // Trigger confetti celebration
-    }, 50);
-}
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.1);
+            --border: rgba(255, 255, 255, 0.2);
+            --text: #ffffff;
+            --accent: #00d2ff;
+        }
 
-function celebrate() {
-   // Code for confetti effect
-   const count = 200;
-   const colors = ['red', 'blue', 'green', 'yellow', 'orange', 'purple'];
-   for (let i = 0; i < count; i++) {
-       const confetti = document.createElement('div');
-       confetti.classList.add('confetti');
-       confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-       // Add animation styling and append to the body
-       document.body.appendChild(confetti);
-       // Remove confetti after animation
-       setTimeout(() => confetti.remove(), 3000);
-   }
-}
-</script>
+        .theme-space { --bg: radial-gradient(circle, #1b2735 0%, #090a0f 100%); --accent: #00d2ff; }
+        .theme-gold { --bg: linear-gradient(135deg, #1a1a1a, #4a3b00); --accent: #ffd700; }
+        .theme-pink { --bg: linear-gradient(135deg, #4d0026, #1a000d); --accent: #ff69b4; }
+        .theme-blue { --bg: linear-gradient(135deg, #001f3f, #000c1a); --accent: #39cccc; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; transition: 0.8s all ease; overflow-x: hidden; }
+
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        input, textarea, select {
+            width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px;
+            border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: white; outline: none;
+        }
+
+        button {
+            width: 100%; padding: 14px; border-radius: 12px; border: none;
+            background: var(--accent); color: #000; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 10px;
+        }
+
+        button:hover { filter: brightness(1.2); }
+        .hidden { display: none !important; }
+
+        .gift-box { font-size: 100px; text-align: center; cursor: pointer; filter: drop-shadow(0 0 20px var(--accent)); transition: 0.5s; }
+
+        .user-item {
+            background: rgba(255,255,255,0.1);
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+        .btn-sm { width: auto; padding: 5px 10px; font-size: 11px; margin: 0 2px; }
+        .btn-edit { background: #f1c40f; }
+        .btn-del { background: #e74c3c; color: white; }
+
+        .inbox-card { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; margin-bottom: 8px; border-left: 4px solid var(--accent); font-size: 12px; }
+    </style>
+</head>
+<body class="theme-space">
+
+    <audio id="bgAudio" loop></audio>
+
+    <div id="loginSection" class="glass-card">
+        <h1 style="text-align: center;">✨ SURPRISE</h1>
+        <input type="text" id="loginCode" placeholder="Enter Access Code">
+        <button onclick="handleLogin()">Unlock Magic</button>
+    </div>
+
+    <div id="adminSection" class="glass-card hidden">
+        <h2 style="color: var(--accent)">Admin Control</h2>
+        <div style="max-height: 80vh; overflow-y: auto; padding-right: 10px;">
+            <input type="text" id="adm-code" placeholder="Login Code (Unique)">
+            <input type="text" id="adm-name" placeholder="Friend's Name">
+            <input type="text" id="adm-music1" placeholder="Login Music URL">
+            <input type="text" id="adm-music2" placeholder="Gift Music URL">
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="adm-dob" placeholder="DD-MM">
+                <input type="number" id="adm-age" placeholder="Age">
+            </div>
+            <textarea id="adm-short" placeholder="Short Tagline"></textarea>
+            <textarea id="adm-main" placeholder="Main Message"></textarea>
+            <textarea id="adm-secret" placeholder="Secret Message"></textarea>
+            <select id="adm-theme">
+                <option value="space">Space Dark</option>
+                <option value="gold">Luxury Gold</option>
+                <option value="pink">Soft Pink</option>
+                <option value="blue">Electric Blue</option>
+            </select>
+            <label style="font-size:12px"><input type="checkbox" id="adm-decision" style="width:auto"> Enable Accept/Reject</label>
+            <button onclick="saveUser()">Save / Update User</button>
+
+            <hr style="margin:20px 0; opacity:0.1">
+
+            <h3>Friend List</h3>
+            <div id="userList"></div>
+
+            <hr style="margin:20px 0; opacity:0.1">
+
+            <h3>Inbox</h3>
+            <div id="inboxList"></div>
+            <button onclick="logout()" style="background:#444; color:#fff">Logout</button>
+        </div>
+    </div>
+
+    <div id="userSection" class="glass-card hidden">
+        <div id="musicToggle" onclick="toggleMusic()" style="position:absolute; top:15px; right:15px; cursor:pointer">🎵</div>
+        <h1 id="u-name" style="color: var(--accent); text-align: center;"></h1>
+        <p style="text-align: center;">📅 <span id="u-dob"></span> | Age: <span id="u-age"></span></p>
+        <p id="u-short" style="text-align: center; font-style: italic; margin: 15px 0;"></p>
+        <div id="u-main" style="white-space: pre-wrap; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px;"></div>
+
+        <div id="giftContainer">
+            <div class="gift-box" onclick="revealSecret()">🎁</div>
+            <p style="text-align: center; font-size: 11px;">TAP TO OPEN GIFT</p>
+        </div>
+
+        <div id="secretArea" class="hidden">
+            <div style="padding: 20px; border: 2px dashed var(--accent); border-radius: 16px; margin-bottom: 20px; text-align: center;">
+                <h3>Secret Note 💌</h3>
+                <p id="u-secret"></p>
+            </div>
+        </div>
+
+        <div id="decisionArea" class="hidden">
+            <div style="display: flex; gap: 10px;">
+                <button id="btnAccept" style="background: #2ecc71; color: #fff;" onclick="submitDecision('Accepted')">Accept</button>
+                <button id="btnReject" style="background: #e74c3c; color: #fff;" onclick="submitDecision('Rejected')">Reject</button>
+            </div>
+        </div>
+
+        <textarea id="userMsg" placeholder="Reply to sender..." style="margin-top:20px"></textarea>
+        <button onclick="sendFeedback()">Send Message</button>
+        <button onclick="logout()" style="background: none; font-size: 11px; color: var(--text); opacity: 0.5;">Logout</button>
+    </div>
+
+    <script>
+        const ADMIN_CODE = "867055";
+        const firebaseConfig = {
+            apiKey: "AIzaSyBep2gfvxIwUC_4H3RX3eNy3a1jwLAnEnc",
+            authDomain: "birthday-surprise-by-mg-e8ab4.firebaseapp.com",
+            databaseURL: "https://birthday-surprise-by-mg-e8ab4-default-rtdb.firebaseio.com",
+            projectId: "birthday-surprise-by-mg-e8ab4",
+            storageBucket: "birthday-surprise-by-mg-e8ab4.firebasestorage.app",
+            messagingSenderId: "327833090683",
+            appId: "1:327833090683:web:169d260ab875959d5d00de"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const audio = document.getElementById('bgAudio');
+        let giftMusicUrl = "";
+        let currentUserCode = null;
+
+        function handleLogin() {
+            const code = document.getElementById('loginCode').value.trim();
+            if (code === ADMIN_CODE) {
+                showSection('adminSection');
+                initAdminListeners();
+            } else if (code !== "") {
+                db.ref('users/' + code).once('value', snap => {
+                    if (snap.exists()) {
+                        const d = snap.val();
+                        currentUserCode = code;
+                        giftMusicUrl = d.musicUrl2;
+                        showSection('userSection');
+                        initUserListener(code);
+                        confetti({ particleCount: 150, spread: 70 });
+                        if(d.musicUrl1) { audio.src = d.musicUrl1; audio.play(); }
+                    } else { alert("Wrong Code!"); }
+                });
+            }
+        }
+
+        function saveUser() {
+            const code = document.getElementById('adm-code').value.trim();
+            if(!code) return alert("Code is required!");
+            const data = {
+                name: document.getElementById('adm-name').value,
+                musicUrl1: document.getElementById('adm-music1').value,
+                musicUrl2: document.getElementById('adm-music2').value,
+                dob: document.getElementById('adm-dob').value,
+                age: document.getElementById('adm-age').value,
+                shortWish: document.getElementById('adm-short').value,
+                mainMsg: document.getElementById('adm-main').value,
+                secretMsg: document.getElementById('adm-secret').value,
+                theme: document.getElementById('adm-theme').value,
+                enableDecision: document.getElementById('adm-decision').checked
+            };
+            db.ref('users/' + code).update(data).then(() => {
+                alert("Saved Successfully!");
+                clearAdminForm();
+            });
+        }
+
+        function deleteUser(code) {
+            if(confirm("Are you sure you want to delete this friend?")) {
+                db.ref('users/' + code).remove().then(() => alert("Deleted!"));
+            }
+        }
+
+        function editUser(code) {
+            db.ref('users/' + code).once('value', snap => {
+                const d = snap.val();
+                document.getElementById('adm-code').value = code;
+                document.getElementById('adm-name').value = d.name || '';
+                document.getElementById('adm-music1').value = d.musicUrl1 || '';
+                document.getElementById('adm-music2').value = d.musicUrl2 || '';
+                document.getElementById('adm-dob').value = d.dob || '';
+                document.getElementById('adm-age').value = d.age || '';
+                document.getElementById('adm-short').value = d.shortWish || '';
+                document.getElementById('adm-main').value = d.mainMsg || '';
+                document.getElementById('adm-secret').value = d.secretMsg || '';
+                document.getElementById('adm-theme').value = d.theme || 'space';
+                document.getElementById('adm-decision').checked = d.enableDecision || false;
+                document.getElementById('adminSection').scrollTop = 0;
+            });
+        }
+
+        function initAdminListeners() {
+            db.ref('users').on('value', snap => {
+                const list = document.getElementById('userList');
+                list.innerHTML = '';
+                snap.forEach(c => {
+                    const code = c.key;
+                    const d = c.val();
+                    const div = document.createElement('div');
+                    div.className = 'user-item';
+                    div.innerHTML = `
+                        <span><strong>${d.name || 'No Name'}</strong> (${code})</span>
+                        <div>
+                            <button class="btn-sm btn-edit" onclick="editUser('${code}')">Edit</button>
+                            <button class="btn-sm btn-del" onclick="deleteUser('${code}')">Del</button>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+            });
+
+            db.ref('inbox').on('value', snap => {
+                const list = document.getElementById('inboxList');
+                list.innerHTML = '';
+                snap.forEach(c => {
+                    const d = c.val();
+                    const div = document.createElement('div');
+                    div.className = 'inbox-card';
+                    div.innerHTML = `<strong>${d.userCode}:</strong> ${d.content}`;
+                    list.prepend(div);
+                });
+            });
+        }
+
+        function clearAdminForm() {
+            document.querySelectorAll('#adminSection input, #adminSection textarea').forEach(i => i.value = '');
+        }
+
+        function initUserListener(code) {
+            db.ref('users/' + code).on('value', snap => {
+                const d = snap.val();
+                if(!d) return;
+                document.body.className = 'theme-' + d.theme;
+                document.getElementById('u-name').innerText = "Happy Birthday, " + d.name;
+                document.getElementById('u-dob').innerText = d.dob;
+                document.getElementById('u-age').innerText = d.age;
+                document.getElementById('u-short').innerText = d.shortWish;
+                document.getElementById('u-main').innerText = d.mainMsg;
+                document.getElementById('u-secret').innerText = d.secretMsg;
+                if(d.enableDecision) document.getElementById('decisionArea').classList.remove('hidden');
+                if(d.decisionMade) disableDecision(d.decisionMade);
+            });
+        }
+
+        function revealSecret() {
+            confetti({ particleCount: 200, spread: 100 });
+            document.getElementById('giftContainer').classList.add('hidden');
+            document.getElementById('secretArea').classList.remove('hidden');
+            if(giftMusicUrl) { audio.pause(); audio.src = giftMusicUrl; audio.play(); }
+        }
+
+        function toggleMusic() { audio.paused ? audio.play() : audio.pause(); }
+
+        function submitDecision(choice) {
+            db.ref('users/' + currentUserCode).update({ decisionMade: choice });
+            db.ref('inbox').push({ userCode: currentUserCode, content: "DECISION: " + choice, timestamp: Date.now() });
+        }
+
+        function disableDecision(choice) {
+            document.getElementById('btnAccept').disabled = true;
+            document.getElementById('btnReject').disabled = true;
+            // Map choice to button ID: 'Accepted' -> 'btnAccept', 'Rejected' -> 'btnReject'
+            const btnId = choice === 'Accepted' ? 'btnAccept' : 'btnReject';
+            document.getElementById(btnId).innerText = "Selected: " + choice;
+        }
+
+        function sendFeedback() {
+            const val = document.getElementById('userMsg').value;
+            if(!val) return;
+            db.ref('inbox').push({ userCode: currentUserCode, content: "MSG: " + val, timestamp: Date.now() });
+            document.getElementById('userMsg').value = "";
+            alert("Sent!");
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('.glass-card').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function logout() { location.reload(); }
+    </script>
+</body>
+</html>
